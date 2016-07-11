@@ -10,11 +10,11 @@ import SpriteKit
 
 class Bullet: SKSpriteNode {
     
-    var healthPower: Int = 100 {
+    var healthPower: CGFloat = 1 {
         didSet {
             debugPrint("hp changed: \(healthPower)")
-            self.alpha = CGFloat(healthPower) / 100
-            if healthPower < 50 {
+            self.alpha = healthPower
+            if healthPower < 0.5 {
                 self.removeFromParent()
             }
         }
