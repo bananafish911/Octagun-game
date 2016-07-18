@@ -10,11 +10,17 @@ import UIKit
 import SpriteKit
 
 class GameViewController: UIViewController {
-
+    
+    var menuScene: MenuScene?
+    var gameScene: GameScene?
+    
+    // MARK: - VC lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if let scene = GameScene(fileNamed:"GameScene") {
+        if let scene = MenuScene(fileNamed:"MenuScene") {
+            self.menuScene = scene
             // Configure the view.
             let skView = self.view as! SKView
             skView.showsFPS = true
@@ -29,23 +35,21 @@ class GameViewController: UIViewController {
             skView.presentScene(scene)
         }
     }
-
+    
     override func shouldAutorotate() -> Bool {
-        return true
+        return false
     }
 
     override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return .AllButUpsideDown
-        } else {
-            return .All
-        }
+        return .All
+//        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
+//            return .Portrait
+//        } else {
+//            return .All
+//        }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Release any cached data, images, etc that aren't in use.
-    }
+    
+    // MARK: - Utility
 
     override func prefersStatusBarHidden() -> Bool {
         return true

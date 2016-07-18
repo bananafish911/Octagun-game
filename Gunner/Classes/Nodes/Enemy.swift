@@ -8,23 +8,39 @@
 
 import SpriteKit
 
-class Enemy: SKSpriteNode {
+enum EnemyType: String {
+    case Circle = "Circle"
+    case Polygon = "Polygon"
+    case Rect = "Rect"
+    case Triangle = "Triangle"
     
-    var healthPower: CGFloat = 1 {
-        didSet {
-            debugPrint("hp changed: \(healthPower)")
-            self.alpha = healthPower
-            if healthPower < 0.3 {
-                self.removeFromParent()
-            }
-        }
-    }
+    static let allValues = [Circle, Polygon, Rect, Triangle]
+}
+
+class Enemy: BaseNode {
     
-    override init(texture: SKTexture?, color: UIColor, size: CGSize) {
-        super.init(texture: texture, color: color, size: size)
-    }
+    // MARK: - Properties
+    
+    // MARK: - Methods
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
+    
+    init(type: EnemyType, size: CGFloat = 32) {
+        // TODO: recpect aspect rate !!
+        let texture = SKTexture(imageNamed: type.rawValue)
+        texture.filteringMode = .Nearest
+        super.init(texture: texture, color: UIColor.clearColor(), size: CGSize(width: size, height: size))
+    }
+    
+    override func removeFromParent() {
+        dispatch_async(dispatch_get_main_queue()) {
+            NSNotificationCenter.defaultCenter().postNotificationName(Constants.Notifications.enemyNodeRemovedNotificationKey,
+                                                                      object: nil,
+                                                                      userInfo: nil)
+        }
+        super.removeFromParent()
+    }
+    
 }
