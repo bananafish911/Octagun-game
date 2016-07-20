@@ -47,7 +47,7 @@ class BaseNode: SKSpriteNode {
         healthPower = healthPower - damagePercents
     }
     
-    func configurePhysics(bitmask: UInt32, enemyBitmask: UInt32, mass: CGFloat = 0) {
+    func configurePhysics(bitmask: UInt32, enemyBitmask: UInt32, mass: CGFloat) {
         // self physics body
         self.physicsBody = SKPhysicsBody(texture: self.texture!, size: self.size)
         self.physicsBody?.pinned = false

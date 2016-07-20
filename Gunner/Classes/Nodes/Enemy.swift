@@ -42,5 +42,4 @@ class Enemy: BaseNode {
         }
         super.removeFromParent()
     }
-    
 }

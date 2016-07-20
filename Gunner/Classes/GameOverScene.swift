@@ -1,5 +1,5 @@
 //
-//  MenuScene.swift
+//  GameOverScene.swift
 //  Gunner
 //
 //  Created by Victor on 7/18/16.
@@ -10,17 +10,11 @@ import SpriteKit
 import AudioToolbox
 import UIKit
 
-class MenuScene: SKScene {
+class GameOverScene: SKScene {
     
     // UI Elements
     lazy var playButton: SKSpriteNode = {
         return self.childNodeWithName("playButton") as! SKSpriteNode
-    }()
-    lazy var rateButton: SKSpriteNode = {
-        return self.childNodeWithName("rateButton") as! SKSpriteNode
-    }()
-    lazy var soundButton: SKSpriteNode = {
-        return self.childNodeWithName("soundButton") as! SKSpriteNode
     }()
     lazy var scoreLabel: SKLabelNode = {
         return self.childNodeWithName("scoreLabel") as! SKLabelNode
@@ -28,16 +22,6 @@ class MenuScene: SKScene {
     
     let menuClickSoundAction = SKAction.playSoundFileNamed("menu-click.wav", waitForCompletion: false)
     
-    var soundsDisabled: Bool {
-        get {
-            return NSUserDefaults.standardUserDefaults().boolForKey(Constants.DefaultsKeys.soundsDisabledKey)
-        }
-        set {
-            NSUserDefaults.standardUserDefaults().setBool(newValue, forKey: Constants.DefaultsKeys.soundsDisabledKey)
-            NSUserDefaults.standardUserDefaults().synchronize()
-        }
-    }
-
     var bestScore: Int {
         get {
             return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
@@ -63,17 +47,10 @@ class MenuScene: SKScene {
     
     func playButtonClick() {
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        appDelegate.gameScene = nil
+        appDelegate.gameScene = GameScene(fileNamed:"GameScene")
         self.view?.presentScene(appDelegate.gameScene)
     }
-    
-    func soundButtonClick() {
-        //
-    }
-    
-    func rateButtonClick() {
-        //
-    }
-    
     
     // MARK: - SKScene delegate
     
@@ -88,10 +65,6 @@ class MenuScene: SKScene {
             // buttons
             if playButton.containsPoint(location) {
                 playButtonClick()
-            } else if soundButton.containsPoint(location) {
-                soundButtonClick()
-            } else if rateButton.containsPoint(location) {
-                rateButtonClick()
             }
         }
     }

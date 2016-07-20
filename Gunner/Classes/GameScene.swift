@@ -10,39 +10,23 @@ import SpriteKit
 import AudioToolbox
 import UIKit
 
-/**
- *  Gameplay configuration here
- */
-struct GameplayConfig {
-    // TODO: dont forget bout balance
-    static var gravityFieldstrength: Float = 0.5 //measures the acceleration of the field in meters per second squared
-    static var playerDamageForce: Int = 320
-    static var levelUpScoreInterval: Int = 100
-    // Bullet
-    static var bulletDamageForce: Int = 48 // Example: one bullet with 32 DF kills enemy with size 32
-    static var bulletSpeedRatio: CGFloat = 10000 // starting speed ratio
-    static var bulletsMaxOnline: Int = 8 // shots limit
-    static var bulletTimeToLive: NSTimeInterval = 3 // in seconts
-    // Enemy
-    static var enemyMinSize: CGFloat = 32 // minimum size of the enemy, also affects to the damageForce (size == damageF)
-    static var enemyMaxSize: CGFloat = 64 // maximum size of the enemy, also affects to the damageForce (size == damageF)
-    static var enemySpeedLimit: CGFloat = 30 // m per second^2
-    static var enemiesMaxOnline: Int = 8 // limit enemies on scene
-}
-
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // MARK: - Properties
-    struct Playground {
-        static let size = UIScreen.mainScreen().bounds.size
-        static let center = CGPointMake(UIScreen.mainScreen().bounds.size.width / 2, UIScreen.mainScreen().bounds.size.height / 2)
-    }
     // UI Elements
-    lazy var menuButton: SKSpriteNode = {
-        return self.childNodeWithName("menuButton") as! SKSpriteNode
+    lazy var playPauseButton: SKSpriteNode = {
+        let button = SKSpriteNode(imageNamed: "Pause")
+        button.anchorPoint = CGPoint(x: 1, y: 1)
+        button.position = CGPoint(x: Playground.Borders.right - 8, y: Playground.Borders.top - 8)
+        return button
     }()
     lazy var scoreLabel: SKLabelNode = {
-        return self.childNodeWithName("scoreLabel") as! SKLabelNode
+        let label = SKLabelNode(fontNamed: Constants.appFontName)
+        label.position = CGPoint(x: Playground.center.x, y: Playground.Borders.top - 24)
+        label.text = ""
+        label.fontColor = UIColor.whiteColor()
+        label.fontSize = 20
+        return label
     }()
     
     // category masks (physics, collisions, light)
@@ -54,24 +38,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var player = Player()
         
     var gravityField = SKFieldNode.radialGravityField()
-    var score: (points: Int, nextLevelPoints: Int) = (0, GameplayConfig.levelUpScoreInterval) {
-        didSet {
-            if bestScore < score.points {
-                bestScore = score.points
-            }
-            scoreLabel.text = "Score \(score.points)"
-            if score.points > score.nextLevelPoints {
-                // level up!
-                player.regenerate()
-                playSound(Sounds.levelUp)
-                GameplayConfig.enemiesMaxOnline += 1
-                score.nextLevelPoints += GameplayConfig.levelUpScoreInterval
-                scoreLabel.fontColor = UIColor.appRedColor()
-            } else {
-                scoreLabel.fontColor = UIColor.whiteColor()
-            }
-        }
-    }
+    
     var bestScore: Int {
         get {
             return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
@@ -83,17 +50,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             }
         }
     }
-    var enemiesOnline: Int = 0 {
+    var score: (points: Int, nextLevelPoints: Int) = (0, GameplayConfig.levelUpScoreInterval) {
+        didSet {
+            if bestScore < score.points {
+                bestScore = score.points
+            }
+            scoreLabel.text = "Score: \(score.points)"
+        }
+    }
+
+    var enemiesOnline: (onlineNow: Int, limit: Int) = (0, GameplayConfig.enemiesMaxOnline) {
         didSet {
             print("enemiesOnline = \(enemiesOnline)")
         }
     }
-    var bulletsMonitor: (online: Int, hitsTotal: Int, shotsTotal: Int) = (0, 0, 0) {
-        didSet {
-            let accuracy = Float(bulletsMonitor.hitsTotal) / Float(bulletsMonitor.shotsTotal) * 100
-            print("accuracy \(accuracy)")
-        }
-    }
+    var bulletsMonitor: (online: Int, hitsTotal: Int, shotsTotal: Int) = (0, 0, 0)
     var gamingTime: CFTimeInterval = 0 // seconds
     
     // Sounds
@@ -105,6 +76,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         static let pitch = SKAction.playSoundFileNamed("pitch.wav", waitForCompletion: false)
         static let negativeHiBeep = SKAction.playSoundFileNamed("negative-beep-hi.wav", waitForCompletion: false)
         static let negativeLowBeep = SKAction.playSoundFileNamed("negative-beep-lo.wav", waitForCompletion: false)
+        // TODO: find a good sound for shot
     }
     var soundsDisabled: Bool {
         get {
@@ -121,10 +93,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: - Lifecycle
     
     override func didMoveToView(view: SKView) {
+        
+        // setup game scene
         self.size = Playground.size
         self.backgroundColor = UIColor.appBackgroundColor()
         
         self.addPlayer()
+        
+        self.addChild(scoreLabel)
+        self.score.points = 0
+        
+        self.addChild(playPauseButton)
         
         // setup physics, gravity
         self.physicsWorld.gravity = CGVectorMake(0, 0)
@@ -140,23 +119,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.runAction(repeatAction)
         
         // NSNotifications
-        NSNotificationCenter.defaultCenter().addObserver(self,
-                                                         selector: #selector(GameScene.bulletNodeRemovedNotification(_:)),
-                                                         name:Constants.Notifications.bulletNodeRemovedNotificationKey,
-                                                         object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self,
-                                                         selector: #selector(GameScene.enemyNodeRemovedNotification(_:)),
-                                                         name:Constants.Notifications.enemyNodeRemovedNotificationKey,
-                                                         object: nil)
+        self.setupNotifications()
     }
     
     /**
-     Called every 1 second
+     Called every one second
      */
     func gameTimerTick() {
         self.gamingTime += 1
         
-        let newEnemiesAmount = GameplayConfig.enemiesMaxOnline - self.enemiesOnline
+        // place new enemies
+        let newEnemiesAmount = enemiesOnline.limit - enemiesOnline.onlineNow
         self.addEnemy(newEnemiesAmount)
         
         // remove out-of-the-bounds bullets
@@ -165,6 +138,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 node.removeFromParent()
             }
         }
+        
+        // level up!
+        if score.points > score.nextLevelPoints {
+            score.nextLevelPoints += GameplayConfig.levelUpScoreInterval
+            player.regenerate()
+            playSound(Sounds.levelUp)
+            enemiesOnline.limit += 1
+            scoreLabel.fontColor = UIColor.appRedColor()
+        } else {
+            scoreLabel.fontColor = UIColor.whiteColor()
+        }
+    }
+    
+    func pauseGame() {
+        self.paused = true
+        // TODO: show popup
+    }
+    
+    func showCountdownTimer(seconds: NSTimeInterval, message: String = "Wait", completionHandler:() -> ()) {
+        // TODO: start countdown timer, next dismiss it after <time>
+        completionHandler()
+    }
+    
+    func resumeGame() {
+        self.paused = false
+        // TODO: dismiss popup
     }
     
     deinit {
@@ -173,12 +172,52 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Notifications
     
+    func setupNotifications() {
+        // Nodes notifications
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: #selector(GameScene.bulletNodeRemovedNotification(_:)),
+                                                         name:Constants.Notifications.bulletNodeRemovedNotificationKey,
+                                                         object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: #selector(GameScene.enemyNodeRemovedNotification(_:)),
+                                                         name:Constants.Notifications.enemyNodeRemovedNotificationKey,
+                                                         object: nil)
+        // UIApplication notifications
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: #selector(GameScene.didEnterBackgroundNotification(_:)),
+                                                         name:UIApplicationDidEnterBackgroundNotification,
+                                                         object: nil)
+    }
+    
     func bulletNodeRemovedNotification(notification: NSNotification){
         self.bulletsMonitor.online -= 1
     }
     
     func enemyNodeRemovedNotification(notification: NSNotification){
-        enemiesOnline -= 1
+        enemiesOnline.onlineNow -= 1
+    }
+    
+    func didEnterBackgroundNotification(notification: NSNotification){
+        self.pauseGame()
+    }
+    
+    // MARK: - Actions
+    
+    func pauseButtonClicked() {
+        // TODO: ignore touches on pause
+        if self.paused {
+            resumeGame()
+            playPauseButton.texture = SKTexture(imageNamed: "Pause")
+        } else {
+            pauseGame()
+            playPauseButton.texture = SKTexture(imageNamed: "Play")
+        }
+        
+    }
+    
+    func gameOverAction() {
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        self.view?.presentScene(appDelegate.gameOverScene)
     }
     
     // MARK: - Add node, nodes generators
@@ -225,11 +264,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                               size: CGFloat.random(GameplayConfig.enemyMinSize, GameplayConfig.enemyMaxSize))
             enemy.setScale(1)
             // physics body
-            enemy.configurePhysics(cEnemy, enemyBitmask: cPlayer | cBullet | cEnemy)
+            enemy.configurePhysics(cEnemy, enemyBitmask: cPlayer | cBullet | cEnemy, mass: 0)
             enemy.name = String(Enemy)
             enemy.position = generateEnemyRandomPosition()
             self.addChild(enemy)
-            enemiesOnline += 1
+            enemiesOnline.onlineNow += 1
             enemy.runAction(SKAction.repeatActionForever(SKAction.rotateByAngle(1, duration: 1)))
         }
     }
@@ -251,8 +290,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for touch in touches {
             let location = touch.locationInNode(self)
             
-            if menuButton.containsPoint(location) {
-                self.paused = !self.paused
+            if playPauseButton.containsPoint(location) || self.paused {
+                pauseButtonClicked()
             } else {
                 let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
                 player.turretBody.runAction(rotateAction, completion: {
@@ -267,12 +306,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        for touch in touches {
-            let location = touch.locationInNode(self)
-            let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
-            player.turretBody.runAction(rotateAction)
-//            // burst mode
-//            self.shotBullet(location)
+        if !self.paused {
+            for touch in touches {
+                let location = touch.locationInNode(self)
+                let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
+                player.turretBody.runAction(rotateAction)
+                // burst mode
+                self.shotBullet(location)
+            }
         }
     }
     
@@ -304,7 +345,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     // game over
                     self.paused = true
                     // TODO: show GAME OVER screen
-                    self.player.healthPower = 100
+//                    self.player.healthPower = 100
+                    gameOverAction()
                 }
                 
                 // pulsate
@@ -351,7 +393,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didEndContact(contact: SKPhysicsContact) {
-
+        // TODO: ricoshet
     }
     
     override func didSimulatePhysics() {
@@ -371,15 +413,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             } else if (node.physicsBody!.velocity.dy < -maxSpeed) {
                 node.physicsBody!.velocity = CGVectorMake(node.physicsBody!.velocity.dx, -maxSpeed);
             }
-        }
-    }
-    
-    override func didChangeSize(oldSize: CGSize) {
-        for aNode in self.children {
-            var newPosition = CGPoint()
-            newPosition.x = aNode.position.x / oldSize.width * self.frame.width
-            newPosition.y = aNode.position.y / oldSize.height * self.frame.height
-            aNode.position = newPosition
         }
     }
     
@@ -457,8 +490,6 @@ extension GameScene {
 // MARK: - Sound effects
 
 extension GameScene {
-    
-    // TODO: enable/disable sounds
     
     func vibrate() {
         if !soundsDisabled {

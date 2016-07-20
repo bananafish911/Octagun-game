@@ -12,9 +12,16 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-
+    var menuScene = MenuScene(fileNamed:"MenuScene")
+    var gameScene = GameScene(fileNamed:"GameScene")
+    var gameOverScene = GameOverScene(fileNamed:"GameOverScene")
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+        
+        menuScene?.scaleMode = .AspectFit
+        gameScene?.scaleMode = .AspectFit
+        gameOverScene?.scaleMode = .AspectFit
+
         return true
     }
 
@@ -39,7 +46,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationWillTerminate(application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
-
-
 }
 

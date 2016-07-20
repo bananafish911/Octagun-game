@@ -37,6 +37,8 @@
 		5763B8021D35227000154E78 /* negative-beep-lo.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5763B8001D35227000154E78 /* negative-beep-lo.wav */; };
 		5763B8031D35227000154E78 /* negative-beep-hi.wav in Resources */ = {isa = PBXBuildFile; fileRef = 5763B8011D35227000154E78 /* negative-beep-hi.wav */; };
 		57878D201D3D22FE00641989 /* MenuScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57878D1F1D3D22FE00641989 /* MenuScene.swift */; };
+		57878D241D3D35FC00641989 /* GameOverScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = 57878D231D3D35FC00641989 /* GameOverScene.sks */; };
+		57878D261D3D371C00641989 /* GameOverScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57878D251D3D371C00641989 /* GameOverScene.swift */; };
 		57C14EA21D32D79400CE2EB6 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C14EA11D32D79400CE2EB6 /* Player.swift */; };
 		57C14EA41D32D7AB00CE2EB6 /* Enemy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C14EA31D32D7AB00CE2EB6 /* Enemy.swift */; };
 		57C14EA61D32D7C900CE2EB6 /* Bullet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C14EA51D32D7C900CE2EB6 /* Bullet.swift */; };
@@ -77,6 +79,8 @@
 		5763B8001D35227000154E78 /* negative-beep-lo.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "negative-beep-lo.wav"; sourceTree = "<group>"; };
 		5763B8011D35227000154E78 /* negative-beep-hi.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "negative-beep-hi.wav"; sourceTree = "<group>"; };
 		57878D1F1D3D22FE00641989 /* MenuScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MenuScene.swift; sourceTree = "<group>"; };
+		57878D231D3D35FC00641989 /* GameOverScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = GameOverScene.sks; sourceTree = "<group>"; };
+		57878D251D3D371C00641989 /* GameOverScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameOverScene.swift; sourceTree = "<group>"; };
 		57C14EA11D32D79400CE2EB6 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		57C14EA31D32D7AB00CE2EB6 /* Enemy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Enemy.swift; sourceTree = "<group>"; };
 		57C14EA51D32D7C900CE2EB6 /* Bullet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bullet.swift; sourceTree = "<group>"; };
@@ -119,8 +123,9 @@
 				57C14EA71D32D81500CE2EB6 /* Helpers */,
 				5763B7F31D35187600154E78 /* Sounds */,
 				57293DEE1D318FA3002A44B8 /* Main.storyboard */,
-				57293E031D319211002A44B8 /* GameScene.sks */,
 				5737240E1D39036B007F5EDD /* MenuScene.sks */,
+				57293E031D319211002A44B8 /* GameScene.sks */,
+				57878D231D3D35FC00641989 /* GameOverScene.sks */,
 				57626AE81D3659530095DAB5 /* SilomBol.ttf */,
 				57293DF11D318FA3002A44B8 /* Assets.xcassets */,
 				57293DF31D318FA3002A44B8 /* LaunchScreen.storyboard */,
@@ -135,6 +140,7 @@
 				57293DFD1D31902C002A44B8 /* AppDelegate.swift */,
 				57878D1F1D3D22FE00641989 /* MenuScene.swift */,
 				57293DFE1D31902C002A44B8 /* GameScene.swift */,
+				57878D251D3D371C00641989 /* GameOverScene.swift */,
 				57C14EAC1D339A4700CE2EB6 /* GameViewController.swift */,
 				57C14EA01D32D74B00CE2EB6 /* Nodes */,
 			);
@@ -252,6 +258,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57878D241D3D35FC00641989 /* GameOverScene.sks in Resources */,
 				57293E041D319211002A44B8 /* GameScene.sks in Resources */,
 				5763B7FA1D35187600154E78 /* coin.wav in Resources */,
 				5763B8031D35227000154E78 /* negative-beep-hi.wav in Resources */,
@@ -295,6 +302,7 @@
 				5763B7DF1D34141300154E78 /* Int+Extensions.swift in Sources */,
 				57C14EA61D32D7C900CE2EB6 /* Bullet.swift in Sources */,
 				5763B7E71D34141300154E78 /* Vector3.swift in Sources */,
+				57878D261D3D371C00641989 /* GameOverScene.swift in Sources */,
 				5763B7CE1D33FAC700154E78 /* Constants.swift in Sources */,
 				573724131D391031007F5EDD /* BaseNode.swift in Sources */,
 			);
