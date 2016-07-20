@@ -13,13 +13,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
     var menuScene = MenuScene(fileNamed:"MenuScene")
-    var gameScene = GameScene(fileNamed:"GameScene")
+    var gameScene = GameScene()
     var gameOverScene = GameOverScene(fileNamed:"GameOverScene")
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         
         menuScene?.scaleMode = .AspectFit
-        gameScene?.scaleMode = .AspectFit
+        gameScene.scaleMode = .AspectFit
         gameOverScene?.scaleMode = .AspectFit
 
         return true

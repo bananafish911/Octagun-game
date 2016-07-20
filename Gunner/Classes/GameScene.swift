@@ -18,11 +18,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         let button = SKSpriteNode(imageNamed: "Pause")
         button.anchorPoint = CGPoint(x: 1, y: 1)
         button.position = CGPoint(x: Playground.Borders.right - 8, y: Playground.Borders.top - 8)
+        button.zPosition = 99
+        button.alpha = 0.5
         return button
     }()
     lazy var scoreLabel: SKLabelNode = {
         let label = SKLabelNode(fontNamed: Constants.appFontName)
         label.position = CGPoint(x: Playground.center.x, y: Playground.Borders.top - 24)
+        label.zPosition = 99
         label.text = ""
         label.fontColor = UIColor.whiteColor()
         label.fontSize = 20
@@ -69,13 +72,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // Sounds
     struct Sounds {
-        static let coin = SKAction.playSoundFileNamed("coin.wav", waitForCompletion: false)
+        static let menuClick = SKAction.playSoundFileNamed("menu-click.wav", waitForCompletion: false)
+        
+        static let laser = SKAction.playSoundFileNamed("laser.wav", waitForCompletion: false)
         static let kick = SKAction.playSoundFileNamed("kick.wav", waitForCompletion: false)
         static let levelUp = SKAction.playSoundFileNamed("level-up.wav", waitForCompletion: false)
-        static let menuClick = SKAction.playSoundFileNamed("menu-click.wav", waitForCompletion: false)
         static let pitch = SKAction.playSoundFileNamed("pitch.wav", waitForCompletion: false)
+        static let bang = SKAction.playSoundFileNamed("bang.wav", waitForCompletion: false)
         static let negativeHiBeep = SKAction.playSoundFileNamed("negative-beep-hi.wav", waitForCompletion: false)
-        static let negativeLowBeep = SKAction.playSoundFileNamed("negative-beep-lo.wav", waitForCompletion: false)
         // TODO: find a good sound for shot
     }
     var soundsDisabled: Bool {
@@ -166,6 +170,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // TODO: dismiss popup
     }
     
+    // TODO: restart game
+    
+    // state restoration
+    
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
@@ -217,6 +225,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func gameOverAction() {
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        appDelegate.gameOverScene?.score = self.score.points
         self.view?.presentScene(appDelegate.gameOverScene)
     }
     
@@ -245,7 +254,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         self.addChild(bullet)
         self.player.animateCannonShot()
-        self.playSound(Sounds.menuClick)
+        self.playSound(Sounds.laser)
         
         bulletsMonitor.shotsTotal += 1
         bulletsMonitor.online += 1
@@ -329,8 +338,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 enemy = contact.bodyA
             }
             
-            self.playSound(Sounds.pitch)
-            
             if let enemyNode = enemy.node as? Enemy {
                 self.calculateCollisionDamageForNodes(enemyNode, nodeB: self.player)
                 
@@ -344,15 +351,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if self.player.healthPower == 0 {
                     // game over
                     self.paused = true
-                    // TODO: show GAME OVER screen
-//                    self.player.healthPower = 100
-                    gameOverAction()
+                    self.gameOverAction()
+                } else {
+                    // hit
+                    self.playSound(Sounds.pitch)
+                    // pulsate
+                    self.player.runAction(SKAction.scaleTo(0.95, duration: 0.05), completion: {
+                        self.player.runAction(SKAction.scaleTo(1, duration: 0.05))
+                    })
                 }
-                
-                // pulsate
-                self.player.runAction(SKAction.scaleTo(0.95, duration: 0.05), completion: {
-                    self.player.runAction(SKAction.scaleTo(1, duration: 0.05))
-                })
             }
         }
         

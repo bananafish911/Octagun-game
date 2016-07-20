@@ -80,18 +80,17 @@ class MenuScene: SKScene {
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         for touch in touches {
             let location = touch.locationInNode(self)
-            
             if self.nodeAtPoint(location).name?.containsString("Button") != nil {
-                self.runAction(menuClickSoundAction)
-            }
-            
-            // buttons
-            if playButton.containsPoint(location) {
-                playButtonClick()
-            } else if soundButton.containsPoint(location) {
-                soundButtonClick()
-            } else if rateButton.containsPoint(location) {
-                rateButtonClick()
+                self.runAction(menuClickSoundAction, completion: { [unowned self] in
+                    // buttons
+                    if self.playButton.containsPoint(location) {
+                        self.playButtonClick()
+                    } else if self.soundButton.containsPoint(location) {
+                        self.soundButtonClick()
+                    } else if self.rateButton.containsPoint(location) {
+                        self.rateButtonClick()
+                    }
+                })
             }
         }
     }

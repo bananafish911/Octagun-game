@@ -32,17 +32,10 @@ class GameViewController: UIViewController {
     
     override func shouldAutorotate() -> Bool {
         return false
-//        return true
     }
 
     override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
         return .Portrait
-        // TODO: Resolve
-        if UIDevice.currentDevice().userInterfaceIdiom == .Phone {
-            return .Portrait
-        } else {
-            return .All
-        }
     }
     
     // MARK: - Utility

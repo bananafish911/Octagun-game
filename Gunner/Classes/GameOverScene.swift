@@ -21,18 +21,9 @@ class GameOverScene: SKScene {
     }()
     
     let menuClickSoundAction = SKAction.playSoundFileNamed("menu-click.wav", waitForCompletion: false)
+    let gameOverSoundAction = SKAction.playSoundFileNamed("bang.wav", waitForCompletion: false) // bang.wav gameover.wav
     
-    var bestScore: Int {
-        get {
-            return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
-        }
-        set {
-            if newValue > bestScore {
-                NSUserDefaults.standardUserDefaults().setInteger(newValue, forKey: Constants.DefaultsKeys.bestScoreKey)
-                NSUserDefaults.standardUserDefaults().synchronize()
-            }
-        }
-    }
+    var score: Int = 0
     
     // MARK: - Methods
     
@@ -41,14 +32,18 @@ class GameOverScene: SKScene {
     override func didMoveToView(view: SKView) {
         self.size = Playground.size
         self.backgroundColor = UIColor.appBackgroundColor()
+        
+        self.runAction(gameOverSoundAction)
+        
+        self.scoreLabel.text = "Score:\n\(score)"
     }
     
     // MARK: - Actions
     
     func playButtonClick() {
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        appDelegate.gameScene = nil
-        appDelegate.gameScene = GameScene(fileNamed:"GameScene")
+        // reload game
+        appDelegate.gameScene = GameScene()
         self.view?.presentScene(appDelegate.gameScene)
     }
     
@@ -59,20 +54,14 @@ class GameOverScene: SKScene {
             let location = touch.locationInNode(self)
             
             if self.nodeAtPoint(location).name?.containsString("Button") != nil {
-                self.runAction(menuClickSoundAction)
-            }
-            
-            // buttons
-            if playButton.containsPoint(location) {
-                playButtonClick()
+                self.runAction(menuClickSoundAction, completion: { [unowned self] in
+                    // buttons
+                    if self.playButton.containsPoint(location) {
+                        self.playButtonClick()
+                    }
+                    })
             }
         }
-    }
-    
-    // MARK: - Utility
-    
-    func updateScoreLabel() {
-        scoreLabel.text = "Best score:\n\(bestScore)"
     }
     
 }
