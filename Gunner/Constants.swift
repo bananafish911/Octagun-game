@@ -29,7 +29,7 @@ struct Constants {
         static let interstitial_gameover_enabled_defaut = false
     }
     
-    static let iTunesUrlString = "itms://itunes.apple.com/us/app/apple-store/id1136360597?mt=8"
+    static let iTunesUrlString = "itms-apps://itunes.apple.com/app/id1136360597"
     static let appFontName = "Silom"
     
     struct Notifications {

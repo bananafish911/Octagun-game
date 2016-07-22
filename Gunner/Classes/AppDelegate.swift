@@ -54,8 +54,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstitialDelegate {
         
         // Firebase remote config
         self.remoteConfig = FIRRemoteConfig.remoteConfig()
+#if DEBUG
         let remoteConfigSettings = FIRRemoteConfigSettings(developerModeEnabled: true)
         self.remoteConfig.configSettings = remoteConfigSettings!
+#endif
         self.remoteConfig.setDefaults([
             Constants.RemoteConfig.interstitial_gameover_enabled: Constants.RemoteConfig.interstitial_gameover_enabled_defaut
             ])
