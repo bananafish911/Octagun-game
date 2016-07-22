@@ -20,6 +20,16 @@ struct Constants {
      *                              *
      *******************************/
     
+    static let smoochAppToken = "dbf6q456gl4ncmjf12pmywskf"
+    
+    static let admob_interstitial_gameover_unitID = "ca-app-pub-4802069045447791/6110719664"
+    
+    struct RemoteConfig {
+        static let interstitial_gameover_enabled = "interstitial_gameover_enabled"
+        static let interstitial_gameover_enabled_defaut = false
+    }
+    
+    static let iTunesUrlString = "itms://itunes.apple.com/us/app/apple-store/id1136360597?mt=8"
     static let appFontName = "Silom"
     
     struct Notifications {
@@ -40,7 +50,7 @@ struct GameplayConfig {
     // TODO: dont forget bout balance
     static let gravityFieldstrength: Float = 0.5 //measures the acceleration of the field in meters per second squared
     static let playerDamageForce: Int = 320
-    static let levelUpScoreInterval: Int = 1000
+    static let levelUpScoreInterval: Int = 2500
     // Bullet
     static let bulletDamageForce: Int = 48 // Example: one bullet with 32 DF kills enemy with size 32
     static let bulletSpeedRatio: CGFloat = 10000 // starting speed ratio
@@ -61,10 +71,10 @@ struct Playground {
     static let center = CGPointMake(UIScreen.mainScreen().bounds.size.width / 2, UIScreen.mainScreen().bounds.size.height / 2)
     
     struct Borders {
-        static let top = UIScreen.mainScreen().bounds.size.height
-        static let bottom = 0
-        static let left = 0
-        static let right = UIScreen.mainScreen().bounds.size.width
+        static let top: CGFloat = UIScreen.mainScreen().bounds.size.height
+        static let bottom: CGFloat = 0.0
+        static let left: CGFloat = 0.0
+        static let right: CGFloat = UIScreen.mainScreen().bounds.size.width
     }
 }
 

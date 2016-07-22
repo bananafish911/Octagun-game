@@ -9,17 +9,18 @@
 import SpriteKit
 import AudioToolbox
 import UIKit
+import FirebaseAnalytics
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // MARK: - Properties
     // UI Elements
-    lazy var playPauseButton: SKSpriteNode = {
-        let button = SKSpriteNode(imageNamed: "Pause")
-        button.anchorPoint = CGPoint(x: 1, y: 1)
-        button.position = CGPoint(x: Playground.Borders.right - 8, y: Playground.Borders.top - 8)
+    lazy var menuButton: SKSpriteNode = {
+        let button = SKSpriteNode(imageNamed: "MenuButton")
+        button.anchorPoint = CGPoint(x: 0, y: 1)
+        button.position = CGPoint(x: Playground.Borders.left, y: Playground.Borders.top)
         button.zPosition = 99
-        button.alpha = 0.5
+//        button.alpha = 0.5
         return button
     }()
     lazy var scoreLabel: SKLabelNode = {
@@ -79,9 +80,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         static let levelUp = SKAction.playSoundFileNamed("level-up.wav", waitForCompletion: false)
         static let pitch = SKAction.playSoundFileNamed("pitch.wav", waitForCompletion: false)
         static let bang = SKAction.playSoundFileNamed("bang.wav", waitForCompletion: false)
+        static let gameOver = SKAction.playSoundFileNamed("gameover.wav", waitForCompletion: false)
         static let negativeHiBeep = SKAction.playSoundFileNamed("negative-beep-hi.wav", waitForCompletion: false)
-        // TODO: find a good sound for shot
     }
+    
     var soundsDisabled: Bool {
         get {
             return NSUserDefaults.standardUserDefaults().boolForKey(Constants.DefaultsKeys.soundsDisabledKey)
@@ -96,7 +98,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // MARK: - Lifecycle
     
-    override func didMoveToView(view: SKView) {
+    override init() {
+        super.init()
+        self.configureOnce()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
+    
+    override init(size: CGSize) {
+        super.init(size: size)
+    }
+    
+    /**
+     Add some nodes, registering for notifications, etc.
+     */
+    func configureOnce() {
         
         // setup game scene
         self.size = Playground.size
@@ -107,7 +125,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.addChild(scoreLabel)
         self.score.points = 0
         
-        self.addChild(playPauseButton)
+        self.addChild(menuButton)
         
         // setup physics, gravity
         self.physicsWorld.gravity = CGVectorMake(0, 0)
@@ -124,6 +142,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // NSNotifications
         self.setupNotifications()
+    }
+    
+    override func didMoveToView(view: SKView) {
+        debugPrint("GameScene - didMoveToView")
     }
     
     /**
@@ -155,24 +177,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func pauseGame() {
+    // TODO: state restoration
+    
+    func saveGameState() {
         self.paused = true
-        // TODO: show popup
     }
     
-    func showCountdownTimer(seconds: NSTimeInterval, message: String = "Wait", completionHandler:() -> ()) {
-        // TODO: start countdown timer, next dismiss it after <time>
-        completionHandler()
-    }
-    
-    func resumeGame() {
+    func restoreGameState() {
+        self.paused = true
+        // do work
         self.paused = false
-        // TODO: dismiss popup
     }
-    
-    // TODO: restart game
-    
-    // state restoration
     
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
@@ -195,6 +210,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                                                          selector: #selector(GameScene.didEnterBackgroundNotification(_:)),
                                                          name:UIApplicationDidEnterBackgroundNotification,
                                                          object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self,
+                                                         selector: #selector(GameScene.willTerminateNotification(_:)),
+                                                         name:UIApplicationWillTerminateNotification,
+                                                         object: nil)
     }
     
     func bulletNodeRemovedNotification(notification: NSNotification){
@@ -206,27 +225,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didEnterBackgroundNotification(notification: NSNotification){
-        self.pauseGame()
+        // TODO: look at me
+    }
+    
+    func willTerminateNotification(notification: NSNotification){
+        // TODO: look at me
     }
     
     // MARK: - Actions
     
-    func pauseButtonClicked() {
-        // TODO: ignore touches on pause
-        if self.paused {
-            resumeGame()
-            playPauseButton.texture = SKTexture(imageNamed: "Pause")
-        } else {
-            pauseGame()
-            playPauseButton.texture = SKTexture(imageNamed: "Play")
-        }
-        
+    func menuButtonClicked() {
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        self.view?.presentScene(appDelegate.menuScene, transition: SKTransition.crossFadeWithDuration(0.5))
     }
     
     func gameOverAction() {
+        
+        FIRAnalytics.logEventWithName("GameOver", parameters: [
+            "score": "\(self.score.points)",
+            "gamingTime": "\(self.gamingTime)",
+            "bestScoreOnThisDevice": "\(self.bestScore)"
+            ])
+        
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        appDelegate.gameOverScene?.score = self.score.points
-        self.view?.presentScene(appDelegate.gameOverScene)
+        appDelegate.gameOverScene.score = self.score.points
+        self.view?.presentScene(appDelegate.gameOverScene, transition: SKTransition.crossFadeWithDuration(0.5))
     }
     
     // MARK: - Add node, nodes generators
@@ -276,6 +299,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             enemy.configurePhysics(cEnemy, enemyBitmask: cPlayer | cBullet | cEnemy, mass: 0)
             enemy.name = String(Enemy)
             enemy.position = generateEnemyRandomPosition()
+            enemy.alpha = 0.0
+            enemy.runAction(SKAction.fadeInWithDuration(0.3))
             self.addChild(enemy)
             enemiesOnline.onlineNow += 1
             enemy.runAction(SKAction.repeatActionForever(SKAction.rotateByAngle(1, duration: 1)))
@@ -283,13 +308,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func generateEnemyRandomPosition() -> CGPoint {
-        let range: (xMax: CGFloat, yMax: CGFloat) = (Playground.size.width + GameplayConfig.enemyMaxSize,
-                                                      Playground.size.height + GameplayConfig.enemyMaxSize)
+        let range: (xMax: CGFloat, yMax: CGFloat, xMin: CGFloat, yMin: CGFloat) = (Playground.size.width + GameplayConfig.enemyMaxSize,
+                                                                                   Playground.size.height + GameplayConfig.enemyMaxSize,
+                                                                                   0 - GameplayConfig.enemyMaxSize,
+                                                                                   0 - GameplayConfig.enemyMaxSize)
         //
-        let randomPositionX = CGPoint(x: CGFloat.random(0, range.xMax),
-                                      y: [0, range.yMax].randomElement())
-        let randomPositionY = CGPoint(x: [0, range.xMax].randomElement(),
-                                      y: CGFloat.random(0, range.yMax))
+        let randomPositionX = CGPoint(x: CGFloat.random(range.xMin, range.xMax),
+                                      y: [range.yMin, range.yMax].randomElement())
+        let randomPositionY = CGPoint(x: [range.xMin, range.xMax].randomElement(),
+                                      y: CGFloat.random(range.yMin, range.yMax))
         return [randomPositionX, randomPositionY].randomElement()
     }
     
@@ -299,8 +326,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         for touch in touches {
             let location = touch.locationInNode(self)
             
-            if playPauseButton.containsPoint(location) || self.paused {
-                pauseButtonClicked()
+//            // 6s 6sp only
+//            if #available(iOS 9.0, *) {
+//                let maximumPossibleForce = touch.maximumPossibleForce
+//                let touchForce = touch.force
+//                let normalizedForce = touchForce / maximumPossibleForce
+//                debugPrint("3d touch normalizedForce = \(normalizedForce)")
+//                if normalizedForce > 0.75 {
+//                    // shot several bullets
+//                }
+//            } else {
+//                // Fallback on earlier versions
+//            }
+            
+            if menuButton.containsPoint(location) || self.paused {
+                menuButtonClicked()
             } else {
                 let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
                 player.turretBody.runAction(rotateAction, completion: {
@@ -320,8 +360,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 let location = touch.locationInNode(self)
                 let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
                 player.turretBody.runAction(rotateAction)
-                // burst mode
-                self.shotBullet(location)
+                //self.shotBullet(location) //burst mode
             }
         }
     }
@@ -384,7 +423,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     if enemyNode.healthPower == 0 {
                         bulletsMonitor.hitsTotal += 1
                         score.points = score.points + enemyNode.damageForce
-                        // TODO: regenerade player every N (5000?) points
                         self.explodeNode(enemyNode, completionHandler: { (node) in
                             enemyNode.removeFromParent()
                         })
@@ -400,7 +438,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didEndContact(contact: SKPhysicsContact) {
-        // TODO: ricoshet
+        // nothing here
     }
     
     override func didSimulatePhysics() {
@@ -526,8 +564,8 @@ extension GameScene {
         let relativeTouch = CGPoint(x: point.x - player.position.x,
                                     y: point.y - player.position.y)
         let radians = atan2(-relativeTouch.x, relativeTouch.y)
-        print("relative touch:\(relativeTouch)")
-        print("radains: \(radians)")
+        //debugPrint("relative touch:\(relativeTouch)")
+        //debugPrint("radains: \(radians)")
         
         return radians
     }

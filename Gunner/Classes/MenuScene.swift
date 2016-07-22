@@ -9,6 +9,7 @@
 import SpriteKit
 import AudioToolbox
 import UIKit
+import FirebaseAnalytics
 
 class MenuScene: SKScene {
     
@@ -22,6 +23,10 @@ class MenuScene: SKScene {
     lazy var soundButton: SKSpriteNode = {
         return self.childNodeWithName("soundButton") as! SKSpriteNode
     }()
+    lazy var chatButton: SKSpriteNode = {
+        return self.childNodeWithName("chatButton") as! SKSpriteNode
+    }()
+    
     lazy var scoreLabel: SKLabelNode = {
         return self.childNodeWithName("scoreLabel") as! SKLabelNode
     }()
@@ -39,15 +44,7 @@ class MenuScene: SKScene {
     }
 
     var bestScore: Int {
-        get {
-            return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
-        }
-        set {
-            if newValue > bestScore {
-                NSUserDefaults.standardUserDefaults().setInteger(newValue, forKey: Constants.DefaultsKeys.bestScoreKey)
-                NSUserDefaults.standardUserDefaults().synchronize()
-            }
-        }
+        return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
     }
     
     // MARK: - Methods
@@ -57,23 +54,24 @@ class MenuScene: SKScene {
     override func didMoveToView(view: SKView) {
         self.size = Playground.size
         self.backgroundColor = UIColor.appBackgroundColor()
+        
+        scoreLabel.text = "Best score:\n\(bestScore)"
+        updateSoundButton()
+        
+        let pulseUp = SKAction.scaleTo(1.05, duration: 0.5)
+        let pulseDown = SKAction.scaleTo(0.95, duration: 0.5)
+        let pulse = SKAction.sequence([pulseUp, pulseDown])
+        let repeatPulse = SKAction.repeatActionForever(pulse)
+        self.playButton.runAction(repeatPulse)
     }
     
-    // MARK: - Actions
-    
-    func playButtonClick() {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        self.view?.presentScene(appDelegate.gameScene)
+    func updateSoundButton() {
+        if soundsDisabled {
+            soundButton.texture = SKTexture(imageNamed: "SoundOffButton")
+        } else {
+            soundButton.texture = SKTexture(imageNamed: "SoundOnButton")
+        }
     }
-    
-    func soundButtonClick() {
-        //
-    }
-    
-    func rateButtonClick() {
-        //
-    }
-    
     
     // MARK: - SKScene delegate
     
@@ -81,24 +79,35 @@ class MenuScene: SKScene {
         for touch in touches {
             let location = touch.locationInNode(self)
             if self.nodeAtPoint(location).name?.containsString("Button") != nil {
-                self.runAction(menuClickSoundAction, completion: { [unowned self] in
+                let optionalSound = soundsDisabled ? SKAction.waitForDuration(0) : menuClickSoundAction
+                self.runAction(optionalSound, completion: { [unowned self] in
                     // buttons
+                    
                     if self.playButton.containsPoint(location) {
-                        self.playButtonClick()
-                    } else if self.soundButton.containsPoint(location) {
-                        self.soundButtonClick()
+                        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+                        if appDelegate.gameScene == nil {
+                            appDelegate.gameScene = GameScene()
+                        }
+                        self.view?.presentScene(appDelegate.gameScene!, transition: SKTransition.crossFadeWithDuration(0.5))
+                        
                     } else if self.rateButton.containsPoint(location) {
-                        self.rateButtonClick()
+                        // TODO: appstore uiwebview
+                        let iTunesUrl = NSURL(string: Constants.iTunesUrlString)
+                        if iTunesUrl != nil && UIApplication.sharedApplication().canOpenURL(iTunesUrl!) {
+                            UIApplication.sharedApplication().openURL(iTunesUrl!)
+                        }
+                        FIRAnalytics.logEventWithName("userAction", parameters: ["button": "rate"])
+                        
+                    } else if self.soundButton.containsPoint(location) {
+                        self.soundsDisabled = !self.soundsDisabled
+                        self.updateSoundButton()
+                        
+                    } else if self.chatButton.containsPoint(location) {
+                        Smooch.show()
                     }
                 })
             }
         }
-    }
-    
-    // MARK: - Utility
-    
-    func updateScoreLabel() {
-        scoreLabel.text = "Best score:\n\(bestScore)"
     }
     
 }

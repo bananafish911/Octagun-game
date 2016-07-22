@@ -2,17 +2,17 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "Torret-tube.png",
+      "filename" : "Turret-tube.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "Torret-tube@2x.png",
+      "filename" : "Turret-tube@2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "Torret-tube@3x.png",
+      "filename" : "Turret-tube@3x.png",
       "scale" : "3x"
     }
   ],

@@ -20,10 +20,18 @@ class GameOverScene: SKScene {
         return self.childNodeWithName("scoreLabel") as! SKLabelNode
     }()
     
-    let menuClickSoundAction = SKAction.playSoundFileNamed("menu-click.wav", waitForCompletion: false)
-    let gameOverSoundAction = SKAction.playSoundFileNamed("bang.wav", waitForCompletion: false) // bang.wav gameover.wav
+    struct Sounds {
+        static let menuClickAction = SKAction.playSoundFileNamed("menu-click.wav", waitForCompletion: false)
+        static let gameOverAction = SKAction.playSoundFileNamed("bang.wav", waitForCompletion: false)
+    }
+    
+    var soundsDisabled: Bool {
+        return NSUserDefaults.standardUserDefaults().boolForKey(Constants.DefaultsKeys.soundsDisabledKey)
+    }
     
     var score: Int = 0
+    
+    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
     
     // MARK: - Methods
     
@@ -33,18 +41,17 @@ class GameOverScene: SKScene {
         self.size = Playground.size
         self.backgroundColor = UIColor.appBackgroundColor()
         
-        self.runAction(gameOverSoundAction)
-        
         self.scoreLabel.text = "Score:\n\(score)"
-    }
-    
-    // MARK: - Actions
-    
-    func playButtonClick() {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        // reload game
-        appDelegate.gameScene = GameScene()
-        self.view?.presentScene(appDelegate.gameScene)
+        
+        let pulseUp = SKAction.scaleTo(1.05, duration: 0.5)
+        let pulseDown = SKAction.scaleTo(0.95, duration: 0.5)
+        let pulse = SKAction.sequence([pulseUp, pulseDown])
+        let repeatPulse = SKAction.repeatActionForever(pulse)
+        self.playButton.runAction(repeatPulse)
+        
+        self.playSound(Sounds.gameOverAction, completion: nil)
+        
+        self.appDelegate.presentInterstitial()
     }
     
     // MARK: - SKScene delegate
@@ -54,13 +61,25 @@ class GameOverScene: SKScene {
             let location = touch.locationInNode(self)
             
             if self.nodeAtPoint(location).name?.containsString("Button") != nil {
-                self.runAction(menuClickSoundAction, completion: { [unowned self] in
-                    // buttons
+                self.playSound(Sounds.menuClickAction, completion: { [unowned self] in
                     if self.playButton.containsPoint(location) {
-                        self.playButtonClick()
+                        self.appDelegate.gameScene = GameScene()
+                        self.view?.presentScene(self.appDelegate.gameScene!, transition: SKTransition.crossFadeWithDuration(0.5))
                     }
-                    })
+                })
             }
+        }
+    }
+    
+    // MARK: - Sounds
+    
+    func playSound(soundAction: SKAction, completion:(() -> ())?) {
+        if self.soundsDisabled {
+            completion?()
+        } else {
+            self.runAction(soundAction, completion: { 
+                completion?()
+            })
         }
     }
     

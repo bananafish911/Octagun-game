@@ -18,15 +18,20 @@ class GameViewController: UIViewController {
         
         // Configure the view.
         let skView = self.view as! SKView
-        skView.showsFPS = true
-        skView.showsNodeCount = true
+        #if DEBUG
+            skView.showsFPS = true
+            skView.showsNodeCount = true
+        #else
+            skView.showsFPS = false
+            skView.showsNodeCount = false
+        #endif
+
         
         /* Sprite Kit applies additional optimizations to improve rendering performance */
         skView.ignoresSiblingOrder = true
         
         /* Set the scale mode to scale to fit the window */
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        appDelegate.menuScene!.scaleMode = .AspectFit
         skView.presentScene(appDelegate.menuScene)
     }
     
