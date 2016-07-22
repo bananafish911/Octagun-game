@@ -285,6 +285,12 @@
 				TargetAttributes = {
 					57293DE21D318FA3002A44B8 = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = WPW5M885N8;
+						SystemCapabilities = {
+							com.apple.Push = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -537,6 +543,7 @@
 			baseConfigurationReference = 8F181BBCA08F75A6DA77BF31 /* Pods-Octagun.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Gunner/Frameworks",
@@ -558,6 +565,7 @@
 			baseConfigurationReference = 6304E9A4370C3EF113DFBBD4 /* Pods-Octagun.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Gunner/Frameworks",

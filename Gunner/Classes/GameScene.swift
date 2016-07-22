@@ -170,7 +170,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             score.nextLevelPoints += GameplayConfig.levelUpScoreInterval
             player.regenerate()
             playSound(Sounds.levelUp)
-            enemiesOnline.limit += 1
+            enemiesOnline.limit += 2
             scoreLabel.fontColor = UIColor.appRedColor()
         } else {
             scoreLabel.fontColor = UIColor.whiteColor()

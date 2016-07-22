@@ -54,7 +54,7 @@ struct GameplayConfig {
     // Bullet
     static let bulletDamageForce: Int = 48 // Example: one bullet with 32 DF kills enemy with size 32
     static let bulletSpeedRatio: CGFloat = 10000 // starting speed ratio
-    static let bulletsMaxOnline: Int = 8 // shots limit
+    static let bulletsMaxOnline: Int = 6 // shots limit
     static let bulletTimeToLive: NSTimeInterval = 4 // in seconts
     // Enemy
     static let enemyMinSize: CGFloat = 32 // minimum size of the enemy, also affects to the damageForce (size == damageF)
