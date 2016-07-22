@@ -44,9 +44,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstitialDelegate {
         // Smooch integration
         Smooch.initWithSettings(SKTSettings(appToken: Constants.smoochAppToken))
         
-        // Preload game scene
-        gameScene = GameScene()
-        
         // Root VC
         self.window = UIWindow(frame: UIScreen.mainScreen().bounds)
         let storyboard = UIStoryboard(name: "Main", bundle: nil)

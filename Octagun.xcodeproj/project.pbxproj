@@ -40,7 +40,10 @@
 		57878D4D1D3F886000641989 /* gameover.wav in Resources */ = {isa = PBXBuildFile; fileRef = 57878D491D3F886000641989 /* gameover.wav */; };
 		57878D4F1D3F886000641989 /* laser.wav in Resources */ = {isa = PBXBuildFile; fileRef = 57878D4B1D3F886000641989 /* laser.wav */; };
 		57878D501D3F886000641989 /* bang.wav in Resources */ = {isa = PBXBuildFile; fileRef = 57878D4C1D3F886000641989 /* bang.wav */; };
-		579FDC8E1D4029CD0052C462 /* LSImage320.png in Resources */ = {isa = PBXBuildFile; fileRef = 579FDC8D1D4029CD0052C462 /* LSImage320.png */; };
+		57A90E161D4249C8000D22D8 /* LSImage@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 57A90E131D4249C8000D22D8 /* LSImage@2x.png */; };
+		57A90E171D4249C8000D22D8 /* LSImage@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 57A90E141D4249C8000D22D8 /* LSImage@3x.png */; };
+		57A90E191D4249E3000D22D8 /* LSImage@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 57A90E181D4249E3000D22D8 /* LSImage@1x.png */; };
+		57A90E1B1D424ADB000D22D8 /* FirebaseServiceAccount.json in Resources */ = {isa = PBXBuildFile; fileRef = 57A90E1A1D424ADB000D22D8 /* FirebaseServiceAccount.json */; };
 		57C14EA21D32D79400CE2EB6 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C14EA11D32D79400CE2EB6 /* Player.swift */; };
 		57C14EA41D32D7AB00CE2EB6 /* Enemy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C14EA31D32D7AB00CE2EB6 /* Enemy.swift */; };
 		57C14EA61D32D7C900CE2EB6 /* Bullet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C14EA51D32D7C900CE2EB6 /* Bullet.swift */; };
@@ -86,7 +89,10 @@
 		57878D491D3F886000641989 /* gameover.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = gameover.wav; sourceTree = "<group>"; };
 		57878D4B1D3F886000641989 /* laser.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = laser.wav; sourceTree = "<group>"; };
 		57878D4C1D3F886000641989 /* bang.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = bang.wav; sourceTree = "<group>"; };
-		579FDC8D1D4029CD0052C462 /* LSImage320.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = LSImage320.png; sourceTree = "<group>"; };
+		57A90E131D4249C8000D22D8 /* LSImage@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LSImage@2x.png"; sourceTree = "<group>"; };
+		57A90E141D4249C8000D22D8 /* LSImage@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LSImage@3x.png"; sourceTree = "<group>"; };
+		57A90E181D4249E3000D22D8 /* LSImage@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "LSImage@1x.png"; sourceTree = "<group>"; };
+		57A90E1A1D424ADB000D22D8 /* FirebaseServiceAccount.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = FirebaseServiceAccount.json; sourceTree = "<group>"; };
 		57C14EA11D32D79400CE2EB6 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		57C14EA31D32D7AB00CE2EB6 /* Enemy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Enemy.swift; sourceTree = "<group>"; };
 		57C14EA51D32D7C900CE2EB6 /* Bullet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Bullet.swift; sourceTree = "<group>"; };
@@ -152,7 +158,6 @@
 				57C14EA71D32D81500CE2EB6 /* Helpers */,
 				5763B7F31D35187600154E78 /* Sounds */,
 				57293DEE1D318FA3002A44B8 /* Main.storyboard */,
-				579FDC8D1D4029CD0052C462 /* LSImage320.png */,
 				5737240E1D39036B007F5EDD /* MenuScene.sks */,
 				57878D231D3D35FC00641989 /* GameOverScene.sks */,
 				57626AE81D3659530095DAB5 /* SilomBol.ttf */,
@@ -161,6 +166,8 @@
 				57293DF61D318FA3002A44B8 /* Info.plist */,
 				57D9F7BC1D41468D00B9AC4C /* BridgingHeader.h */,
 				575716AC1D41426A00848AD7 /* GoogleService-Info.plist */,
+				57A90E1A1D424ADB000D22D8 /* FirebaseServiceAccount.json */,
+				57A90E111D4249C8000D22D8 /* LaunchImages */,
 			);
 			path = Gunner;
 			sourceTree = "<group>";
@@ -210,6 +217,16 @@
 				5763B7F81D35187600154E78 /* menu-click.wav */,
 			);
 			path = Sounds;
+			sourceTree = "<group>";
+		};
+		57A90E111D4249C8000D22D8 /* LaunchImages */ = {
+			isa = PBXGroup;
+			children = (
+				57A90E181D4249E3000D22D8 /* LSImage@1x.png */,
+				57A90E131D4249C8000D22D8 /* LSImage@2x.png */,
+				57A90E141D4249C8000D22D8 /* LSImage@3x.png */,
+			);
+			path = LaunchImages;
 			sourceTree = "<group>";
 		};
 		57C14EA01D32D74B00CE2EB6 /* Nodes */ = {
@@ -294,21 +311,24 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				579FDC8E1D4029CD0052C462 /* LSImage320.png in Resources */,
 				57878D241D3D35FC00641989 /* GameOverScene.sks in Resources */,
 				57878D501D3F886000641989 /* bang.wav in Resources */,
 				5763B8031D35227000154E78 /* negative-beep-hi.wav in Resources */,
 				5763B7FC1D35187600154E78 /* level-up.wav in Resources */,
 				5763B7FD1D35187600154E78 /* menu-click.wav in Resources */,
+				57A90E191D4249E3000D22D8 /* LSImage@1x.png in Resources */,
 				5737240F1D39036B007F5EDD /* MenuScene.sks in Resources */,
+				57A90E161D4249C8000D22D8 /* LSImage@2x.png in Resources */,
 				57878D4D1D3F886000641989 /* gameover.wav in Resources */,
 				57293DF51D318FA3002A44B8 /* LaunchScreen.storyboard in Resources */,
 				575716AD1D41426A00848AD7 /* GoogleService-Info.plist in Resources */,
 				57293DF21D318FA3002A44B8 /* Assets.xcassets in Resources */,
+				57A90E171D4249C8000D22D8 /* LSImage@3x.png in Resources */,
 				57293DF01D318FA3002A44B8 /* Main.storyboard in Resources */,
 				57626AE91D3659530095DAB5 /* SilomBol.ttf in Resources */,
 				5763B7FB1D35187600154E78 /* kick.wav in Resources */,
 				5763B7FF1D351B9600154E78 /* pitch.wav in Resources */,
+				57A90E1B1D424ADB000D22D8 /* FirebaseServiceAccount.json in Resources */,
 				57878D4F1D3F886000641989 /* laser.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

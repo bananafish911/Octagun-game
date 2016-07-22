@@ -47,6 +47,8 @@ class MenuScene: SKScene {
         return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
     }
     
+    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    
     // MARK: - Methods
     
     // MARK: - Lifecycle
@@ -57,6 +59,7 @@ class MenuScene: SKScene {
         
         scoreLabel.text = "Best score:\n\(bestScore)"
         updateSoundButton()
+        updatePlayButton()
         
         let pulseUp = SKAction.scaleTo(1.05, duration: 0.5)
         let pulseDown = SKAction.scaleTo(0.95, duration: 0.5)
@@ -73,6 +76,14 @@ class MenuScene: SKScene {
         }
     }
     
+    func updatePlayButton() {
+        if appDelegate.gameScene == nil {
+            playButton.texture = SKTexture(imageNamed: "Play-button")
+        } else {
+            playButton.texture = SKTexture(imageNamed: "Continue-button")
+        }
+    }
+    
     // MARK: - SKScene delegate
     
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
@@ -84,11 +95,10 @@ class MenuScene: SKScene {
                     // buttons
                     
                     if self.playButton.containsPoint(location) {
-                        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-                        if appDelegate.gameScene == nil {
-                            appDelegate.gameScene = GameScene()
+                        if self.appDelegate.gameScene == nil {
+                            self.appDelegate.gameScene = GameScene()
                         }
-                        self.view?.presentScene(appDelegate.gameScene!, transition: SKTransition.crossFadeWithDuration(0.5))
+                        self.view?.presentScene(self.appDelegate.gameScene!, transition: SKTransition.crossFadeWithDuration(0.5))
                         
                     } else if self.rateButton.containsPoint(location) {
                         // TODO: appstore uiwebview
@@ -104,6 +114,7 @@ class MenuScene: SKScene {
                         
                     } else if self.chatButton.containsPoint(location) {
                         Smooch.show()
+                        FIRAnalytics.logEventWithName("userAction", parameters: ["button": "chat"])
                     }
                 })
             }

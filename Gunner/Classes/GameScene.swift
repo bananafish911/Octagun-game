@@ -179,16 +179,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // TODO: state restoration
     
-    func saveGameState() {
-        self.paused = true
-    }
-    
-    func restoreGameState() {
-        self.paused = true
-        // do work
-        self.paused = false
-    }
-    
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
@@ -210,10 +200,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                                                          selector: #selector(GameScene.didEnterBackgroundNotification(_:)),
                                                          name:UIApplicationDidEnterBackgroundNotification,
                                                          object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self,
-                                                         selector: #selector(GameScene.willTerminateNotification(_:)),
-                                                         name:UIApplicationWillTerminateNotification,
-                                                         object: nil)
     }
     
     func bulletNodeRemovedNotification(notification: NSNotification){
@@ -225,22 +211,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didEnterBackgroundNotification(notification: NSNotification){
-        // TODO: look at me
-    }
-    
-    func willTerminateNotification(notification: NSNotification){
-        // TODO: look at me
+        // pause game and present main menu
+        self.menuButtonClicked()
     }
     
     // MARK: - Actions
     
     func menuButtonClicked() {
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        self.view?.presentScene(appDelegate.menuScene, transition: SKTransition.crossFadeWithDuration(0.5))
+//        self.view?.presentScene(appDelegate.menuScene, transition: SKTransition.crossFadeWithDuration(0.5))
+        self.view?.presentScene(appDelegate.menuScene)
     }
     
     func gameOverAction() {
-        
         FIRAnalytics.logEventWithName("GameOver", parameters: [
             "score": "\(self.score.points)",
             "gamingTime": "\(self.gamingTime)",
@@ -343,11 +326,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 menuButtonClicked()
             } else {
                 let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
-                player.turretBody.runAction(rotateAction, completion: {
-                    if self.bulletsMonitor.online < GameplayConfig.bulletsMaxOnline {
-                        self.shotBullet(location)
+                player.turretBody.runAction(rotateAction, completion: { [weak self] in
+                    if self?.bulletsMonitor.online < GameplayConfig.bulletsMaxOnline {
+                        self?.shotBullet(location)
                     } else {
-                        self.playSound(Sounds.negativeHiBeep)
+                        self?.playSound(Sounds.negativeHiBeep)
                     }
                 })
             }
@@ -395,8 +378,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     // hit
                     self.playSound(Sounds.pitch)
                     // pulsate
-                    self.player.runAction(SKAction.scaleTo(0.95, duration: 0.05), completion: {
-                        self.player.runAction(SKAction.scaleTo(1, duration: 0.05))
+                    self.player.runAction(SKAction.scaleTo(0.95, duration: 0.05), completion: { [weak self] in
+                        self?.player.runAction(SKAction.scaleTo(1, duration: 0.05))
                     })
                 }
             }

@@ -28,7 +28,6 @@ class Enemy: BaseNode {
     }
     
     init(type: EnemyType, size: CGFloat = 32) {
-        // TODO: recpect aspect rate !!
         let texture = SKTexture(imageNamed: type.rawValue)
         texture.filteringMode = .Nearest
         super.init(texture: texture, color: UIColor.clearColor(), size: CGSize(width: size, height: size))

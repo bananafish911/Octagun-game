@@ -9,6 +9,7 @@
 import SpriteKit
 import AudioToolbox
 import UIKit
+import FirebaseAnalytics
 
 class GameOverScene: SKScene {
     
@@ -63,6 +64,8 @@ class GameOverScene: SKScene {
             if self.nodeAtPoint(location).name?.containsString("Button") != nil {
                 self.playSound(Sounds.menuClickAction, completion: { [unowned self] in
                     if self.playButton.containsPoint(location) {
+                        FIRAnalytics.logEventWithName("playAgain", parameters: ["prevScore": "\(self.score)",
+                                                                                "prevTime": "\(self.appDelegate.gameScene?.gamingTime)"])
                         self.appDelegate.gameScene = GameScene()
                         self.view?.presentScene(self.appDelegate.gameScene!, transition: SKTransition.crossFadeWithDuration(0.5))
                     }
