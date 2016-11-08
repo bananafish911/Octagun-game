@@ -15,10 +15,10 @@ class GameOverScene: SKScene {
     
     // UI Elements
     lazy var playButton: SKSpriteNode = {
-        return self.childNodeWithName("playButton") as! SKSpriteNode
+        return self.childNode(withName: "playButton") as! SKSpriteNode
     }()
     lazy var scoreLabel: SKLabelNode = {
-        return self.childNodeWithName("scoreLabel") as! SKLabelNode
+        return self.childNode(withName: "scoreLabel") as! SKLabelNode
     }()
     
     struct Sounds {
@@ -27,28 +27,28 @@ class GameOverScene: SKScene {
     }
     
     var soundsDisabled: Bool {
-        return NSUserDefaults.standardUserDefaults().boolForKey(Constants.DefaultsKeys.soundsDisabledKey)
+        return UserDefaults.standard.bool(forKey: Constants.DefaultsKeys.soundsDisabledKey)
     }
     
     var score: Int = 0
     
-    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     // MARK: - Methods
     
     // MARK: - Lifecycle
     
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         self.size = Playground.size
         self.backgroundColor = UIColor.appBackgroundColor()
         
         self.scoreLabel.text = "Score:\n\(score)"
         
-        let pulseUp = SKAction.scaleTo(1.05, duration: 0.5)
-        let pulseDown = SKAction.scaleTo(0.95, duration: 0.5)
+        let pulseUp = SKAction.scale(to: 1.05, duration: 0.5)
+        let pulseDown = SKAction.scale(to: 0.95, duration: 0.5)
         let pulse = SKAction.sequence([pulseUp, pulseDown])
-        let repeatPulse = SKAction.repeatActionForever(pulse)
-        self.playButton.runAction(repeatPulse)
+        let repeatPulse = SKAction.repeatForever(pulse)
+        self.playButton.run(repeatPulse)
         
         self.playSound(Sounds.gameOverAction, completion: nil)
         
@@ -57,17 +57,17 @@ class GameOverScene: SKScene {
     
     // MARK: - SKScene delegate
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let location = touch.locationInNode(self)
+            let location = touch.location(in: self)
             
-            if self.nodeAtPoint(location).name?.containsString("Button") != nil {
+            if self.atPoint(location).name?.contains("Button") != nil {
                 self.playSound(Sounds.menuClickAction, completion: { [unowned self] in
-                    if self.playButton.containsPoint(location) {
-                        FIRAnalytics.logEventWithName("playAgain", parameters: ["prevScore": "\(self.score)",
-                                                                                "prevTime": "\(self.appDelegate.gameScene?.gamingTime)"])
+                    if self.playButton.contains(location) {
+                        FIRAnalytics.logEvent(withName: "playAgain", parameters: ["prevScore": "\(self.score)" as NSObject,
+                                                                                "prevTime": "\(self.appDelegate.gameScene?.gamingTime)" as NSObject])
                         self.appDelegate.gameScene = GameScene()
-                        self.view?.presentScene(self.appDelegate.gameScene!, transition: SKTransition.crossFadeWithDuration(0.5))
+                        self.view?.presentScene(self.appDelegate.gameScene!, transition: SKTransition.crossFade(withDuration: 0.5))
                     }
                 })
             }
@@ -76,11 +76,11 @@ class GameOverScene: SKScene {
     
     // MARK: - Sounds
     
-    func playSound(soundAction: SKAction, completion:(() -> ())?) {
+    func playSound(_ soundAction: SKAction, completion:(() -> ())?) {
         if self.soundsDisabled {
             completion?()
         } else {
-            self.runAction(soundAction, completion: { 
+            self.run(soundAction, completion: { 
                 completion?()
             })
         }

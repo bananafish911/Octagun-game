@@ -19,22 +19,22 @@ class Player: BaseNode {
             self.updateHPIndicator()
         }
     }
-    private var hpIndicator = SKShapeNode()
+    fileprivate var hpIndicator = SKShapeNode()
     lazy var turretBody: SKSpriteNode = {
         let texture = SKTexture(imageNamed: "Turret-body")
-        texture.filteringMode = .Nearest
+        texture.filteringMode = .nearest
         let node = SKSpriteNode(texture: texture, size: texture.size())
         return node
     }()
     lazy var turretGun: SKSpriteNode = {
         let texture = SKTexture(imageNamed: "Turret-gun")
-        texture.filteringMode = .Nearest
+        texture.filteringMode = .nearest
         let node = SKSpriteNode(texture: texture, size: texture.size())
         return node
     }()
     lazy var turretGunTube: SKSpriteNode = {
         let texture = SKTexture(imageNamed: "Turret-tube")
-        texture.filteringMode = .Nearest
+        texture.filteringMode = .nearest
         let node = SKSpriteNode(texture: texture, size: texture.size())
         return node
     }()
@@ -56,21 +56,21 @@ class Player: BaseNode {
         turretGunTube.position = CGPoint(x: 0, y: 24)
     }
     
-    private func updateHPIndicator() {
+    fileprivate func updateHPIndicator() {
         hpIndicator.removeFromParent()
         
         // hidden when full
         if self.healthPower < 100 {
             let angle = self.hpToRadians(healthPower)
-            let center = CGPointMake(0, 0)
+            let center = CGPoint(x: 0, y: 0)
             
             let bezierPath = UIBezierPath(arcCenter: center, radius: self.size.height / 6, startAngle: 0, endAngle: angle, clockwise: false)
-            bezierPath.addLineToPoint(center)
-            bezierPath.closePath()
+            bezierPath.addLine(to: center)
+            bezierPath.close()
             
-            hpIndicator = SKShapeNode(path: bezierPath.CGPath)
-            hpIndicator.fillColor = UIColor.appRedColor().colorWithAlphaComponent(0.5)
-            hpIndicator.strokeColor = UIColor.clearColor()
+            hpIndicator = SKShapeNode(path: bezierPath.cgPath)
+            hpIndicator.fillColor = UIColor.appRedColor().withAlphaComponent(0.5)
+            hpIndicator.strokeColor = UIColor.clear
             hpIndicator.zPosition = 1
             hpIndicator.zRotation = CGFloat(M_PI_2)
             
@@ -78,18 +78,18 @@ class Player: BaseNode {
         }
     }
     
-    private func hpToRadians(hp: Int) -> CGFloat {
+    fileprivate func hpToRadians(_ hp: Int) -> CGFloat {
         return (2 * CGFloat(M_PI)) * (CGFloat(hp) / 100)
     }
     
-    override func configurePhysics(bitmask: UInt32, enemyBitmask: UInt32, mass: CGFloat) {
+    override func configurePhysics(_ bitmask: UInt32, enemyBitmask: UInt32, mass: CGFloat) {
         super.configurePhysics(bitmask, enemyBitmask: enemyBitmask, mass: mass)
         self.physicsBody?.pinned = true
-        self.physicsBody?.dynamic = false
+        self.physicsBody?.isDynamic = false
         // tube physics body
         turretGunTube.physicsBody = SKPhysicsBody(texture: turretGunTube.texture!, size: turretGunTube.size)
         turretGunTube.physicsBody?.pinned = true
-        turretGunTube.physicsBody?.dynamic = false
+        turretGunTube.physicsBody?.isDynamic = false
         turretGunTube.physicsBody?.affectedByGravity = false
         turretGunTube.physicsBody?.categoryBitMask = bitmask
         turretGunTube.physicsBody?.contactTestBitMask = enemyBitmask
@@ -101,12 +101,12 @@ class Player: BaseNode {
     
     func animateCannonShot() {
         // animate shot
-        turretGun.runAction(SKAction.moveByX(0, y: -4, duration: 0.05)) {
-            self.turretGun.runAction(SKAction.moveByX(0, y: 4, duration: 0.1))
-        }
-        turretGunTube.runAction(SKAction.moveByX(0, y: -2, duration: 0.05)) {
-            self.turretGunTube.runAction(SKAction.moveByX(0, y: 2, duration: 0.1))
-        }
+        turretGun.run(SKAction.moveBy(x: 0, y: -4, duration: 0.05), completion: {
+            self.turretGun.run(SKAction.moveBy(x: 0, y: 4, duration: 0.1))
+        }) 
+        turretGunTube.run(SKAction.moveBy(x: 0, y: -2, duration: 0.05), completion: {
+            self.turretGunTube.run(SKAction.moveBy(x: 0, y: 2, duration: 0.1))
+        }) 
     }
     
     func regenerate() {

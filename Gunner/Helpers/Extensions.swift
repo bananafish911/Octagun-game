@@ -13,7 +13,7 @@ import SpriteKit
 
 extension Int {
     /// SwiftRandom extension
-    static func random(lower: Int = 0, _ upper: Int = 100) -> Int {
+    static func random(_ lower: Int = 0, _ upper: Int = 100) -> Int {
         return lower + Int(arc4random_uniform(UInt32(upper - lower + 1)))
     }
     
@@ -24,21 +24,21 @@ extension Int {
 
 extension Double {
     /// SwiftRandom extension
-    static func random(lower: Double = 0, _ upper: Double = 100) -> Double {
+    static func random(_ lower: Double = 0, _ upper: Double = 100) -> Double {
         return (Double(arc4random()) / 0xFFFFFFFF) * (upper - lower) + lower
     }
 }
 
 extension Float {
     /// SwiftRandom extension
-    static func random(lower: Float = 0, _ upper: Float = 100) -> Float {
+    static func random(_ lower: Float = 0, _ upper: Float = 100) -> Float {
         return (Float(arc4random()) / 0xFFFFFFFF) * (upper - lower) + lower
     }
 }
 
 extension CGFloat {
     /// SwiftRandom extension
-    static func random(lower: CGFloat = 0, _ upper: CGFloat = 1) -> CGFloat {
+    static func random(_ lower: CGFloat = 0, _ upper: CGFloat = 1) -> CGFloat {
         return CGFloat(Float(arc4random()) / Float(UINT32_MAX)) * (upper - lower) + lower
     }
 }
@@ -67,10 +67,10 @@ extension SKAction {
     /**
      * Causes the scene background to flash for duration seconds.
      */
-    static func colorGlitch(scene: SKScene, originalColor: UIColor, duration: NSTimeInterval) -> SKAction {
-        return SKAction.customActionWithDuration(duration) {(node, elapsedTime) in
+    static func colorGlitch(_ scene: SKScene, originalColor: UIColor, duration: TimeInterval) -> SKAction {
+        return SKAction.customAction(withDuration: duration) {(node, elapsedTime) in
             if elapsedTime < CGFloat(duration) {
-                scene.backgroundColor = SKColorWithRGB(Int.random(0...255), g: Int.random(0...255), b: Int.random(0...255))
+                scene.backgroundColor = SKColorWithRGB(Int.random(0, 255), g: Int.random(0, 255), b: Int.random(0, 255))
             } else {
                 scene.backgroundColor = originalColor
             }

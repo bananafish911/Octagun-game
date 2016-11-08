@@ -1,7 +1,7 @@
 //
 //  Smooch.h
 //  Smooch
-//  version : 4.2.2
+//  version : 5.1.0
 //
 //  Copyright (c) 2015 Smooch Technologies. All rights reserved.
 //
@@ -11,7 +11,10 @@
 #import "SKTSettings.h"
 #import "SKTUser.h"
 
-#define SMOOCH_VERSION @"4.2.2"
+NS_ASSUME_NONNULL_BEGIN
+@protocol UNUserNotificationCenterDelegate;
+
+#define SMOOCH_VERSION @"5.1.0"
 
 FOUNDATION_EXPORT double SmoochVersionNumber;
 FOUNDATION_EXPORT const unsigned char SmoochVersionString[];
@@ -24,6 +27,20 @@ FOUNDATION_EXPORT const unsigned char SmoochVersionString[];
  *  `BOOL isSmoochNotification = userInfo[SKTPushNotificationIdentifier] != nil`
  */
 extern NSString* const SKTPushNotificationIdentifier;
+
+/**
+ *  @abstract Identifier for a Smooch user notification reply action.
+ *
+ *  @discussion Used as the identifier for a UIUserNotificationAction on iOS 9, and a UNTextInputNotificationAction on iOS 10 and above.
+ */
+extern NSString* const SKTUserNotificationReplyActionIdentifier;
+
+/**
+ *  @abstract Identifier for a Smooch user notification category.
+ *
+ *  @discussion Used as the identifier for a UIUserNotificationCategory on iOS 9, and a UNNotificationCategory on iOS 10 and above.
+ */
+extern NSString* const SKTUserNotificationReplyCategoryIdentifier;
 
 /**
  *  @abstract Notification that fires when initialization completes successfully
@@ -65,7 +82,7 @@ extern NSString* const SKTInitializationDidCompleteNotification;
  *
  *  @return Settings object passed in +initWithSettings:, or nil if +initWithSettings: hasn't been called yet.
  */
-+(SKTSettings*)settings;
++(nullable SKTSettings*)settings;
 
 /**
  *  @abstract Presents the Smooch conversation screen.
@@ -99,11 +116,13 @@ extern NSString* const SKTInitializationDidCompleteNotification;
  *
  *  @discussion You may use this view controller to embed the conversation in a navigation controller, to change the modal presentation style, or display it in any way you choose.
  *
+ *  A view controller created in this way is tied to the current user's conversation at creation time. If the current user changes (i.e. by calling +login:jwt: or +logout), the view controller is invalidated and must be recreated for the new user.
+ *
  *  Note: It is the responsibility of the caller to show, hide, and maintain a reference to this view controller. Calling `close` will not dismiss a view controller created in this way.
  *
- *  @return A new instance of the Smooch conversation view controller class.
+ *  @return A new instance of the Smooch conversation view controller class. Returns nil if +initWithSettings: hasn't been called
  */
-+(UIViewController*)newConversationViewController;
++(nullable UIViewController*)newConversationViewController;
 
 /**
  *  @abstract Sets the current user's first and last name to be used as a display name when sending messages.
@@ -115,7 +134,7 @@ extern NSString* const SKTInitializationDidCompleteNotification;
  *  @param firstName The first name of the user
  *  @param lastName The last name of the user
  */
-+(void)setUserFirstName:(NSString*)firstName lastName:(NSString*)lastName;
++(void)setUserFirstName:(nullable NSString*)firstName lastName:(nullable NSString*)lastName;
 
 /**
  *  @abstract Tracks an app event, and processes any whispers associated with that event.
@@ -133,7 +152,7 @@ extern NSString* const SKTInitializationDidCompleteNotification;
  *
  *  @return Current conversation, or nil if +initWithSettings: hasn't been called yet.
  */
-+(SKTConversation*)conversation;
++(nullable SKTConversation*)conversation;
 
 /**
  *  @abstract Logs in a new Smooch user.
@@ -149,7 +168,7 @@ extern NSString* const SKTInitializationDidCompleteNotification;
  *  @param userId The distinct id of the user to login. Must not be nil.
  *  @param jwt Optional jwt used to prove the origin of the login request. May be nil.
  */
-+(void)login:(NSString*)userId jwt:(NSString*)jwt;
++(void)login:(NSString*)userId jwt:(nullable NSString*)jwt;
 
 /**
  *  @abstract Logs out the current user.
@@ -184,4 +203,64 @@ extern NSString* const SKTInitializationDidCompleteNotification;
  */
 +(void)handlePushNotification:(NSDictionary*)userInfo;
 
+/**
+ *  @abstract An object conforming to UNUserNotificationCenterDelegate protocol, used to handle notifications on iOS 10 and above.
+ *
+ *  @discussion Implements both methods of UNUserNotificationCenterDelegate.
+ *
+ *  By default this object will automatically be set as the UNUserNotificationCenter delegate at init time. Smooch will maintain a reference to your app's existing delegate (if applicable), and automatically forward any calls for notifications that did not originate from Smooch.
+ *
+ *  To disable automatic overriding, you must set SKTSettings.enableUserNotificationCenterDelegateOverride to NO before calling +initWithSettings:. If you choose to do so, you must manually forward any relevant calls from your own delegate object. To check the origin of a notification, see the documentation for SKTPushNotificationIdentifier. For example:
+ *
+ *  -(void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification withCompletionHandler:(void (^)(UNNotificationPresentationOptions))completionHandler
+ *  {
+ *    if(notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil){
+ *      [[Smooch userNotificationCenterDelegate] userNotificationCenter:center willPresentNotification:notification withCompletionHandler:completionHandler];
+ *      return;
+ *    }
+ *  }
+ *
+ *  -(void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response withCompletionHandler:(void (^)())completionHandler
+ *  {
+ *    if(response.notification.request.content.userInfo[SKTPushNotificationIdentifier] != nil){
+ *      [[Smooch userNotificationCenterDelegate] userNotificationCenter:center didReceiveNotificationResponse:response withCompletionHandler:completionHandler];
+ *      return;
+ *    }
+ *  }
+ *
+ *  @see SKTSettings
+ *
+ *  @return An object conforming to UNUserNotificationCenterDelegate protocol, or nil if +initWithSettings: hasn't been called yet.
+ */
++(nullable id<UNUserNotificationCenterDelegate>)userNotificationCenterDelegate;
+
+/**
+ *  @abstract Handle the user input from a reply type notification action.
+ *
+ *  @discussion Call this method in your -application:handleActionWithIdentifier:forRemoteNotification:withResponseInfo:completionHandler:, passing the action identifier, responseInfo dictionary, and completionHandler callback.
+ *
+ *  This method will post a message on behalf of the user, with the contents of their inline reply. When the message upload completes (either in success or failure), the completion handler will be called.
+ *
+ *  If the action identifier does not match SKTUserNotificationReplyActionIdentifier, the completion handler will be called immediately and the notification will be ignored.
+ *
+ *  This method is called automatically if SKTSettings.enableAppDelegateSwizzling is set to YES.
+ *
+ *  @see SKTSettings
+ */
++(void)handleUserNotificationActionWithIdentifier:(NSString *)identifier withResponseInfo:(NSDictionary *)responseInfo completionHandler:(void (^)())completionHandler;
+
+/**
+ *  @abstract A set of categories used for handling and displaying Smooch user notification actions.
+ *
+ *  @discussion On iOS 8, returns an empty set.
+ *  On iOS 9, returns a set of UIUserNotificationCategory objects, to be used with `UIUserNotificationSettings` +settingsForTypes:categories:
+ *  On iOS 10, returns a set of UNNotificationCategory objects, to be used with `UNUserNotificationCenter` -setNotificationCategories:
+ *
+ *  Categories are registered automatically if SKTSettings.requestPushPermissionOnFirstMessage is set to YES. If automatic registration is disabled, you must make sure to include the Smooch categories in your calls to the above mentioned methods.
+ *
+ *  @see SKTSettings
+ */
++(NSSet*)userNotificationCategories;
+
 @end
+NS_ASSUME_NONNULL_END

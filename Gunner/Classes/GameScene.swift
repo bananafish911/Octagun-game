@@ -10,6 +10,19 @@ import SpriteKit
 import AudioToolbox
 import UIKit
 import FirebaseAnalytics
+// FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
+// Consider refactoring the code to use the non-optional operators.
+fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
+  switch (lhs, rhs) {
+  case let (l?, r?):
+    return l < r
+  case (nil, _?):
+    return true
+  default:
+    return false
+  }
+}
+
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
@@ -28,7 +41,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         label.position = CGPoint(x: Playground.center.x, y: Playground.Borders.top - 24)
         label.zPosition = 99
         label.text = ""
-        label.fontColor = UIColor.whiteColor()
+        label.fontColor = UIColor.white
         label.fontSize = 20
         return label
     }()
@@ -45,12 +58,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var bestScore: Int {
         get {
-            return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
+            return UserDefaults.standard.integer(forKey: Constants.DefaultsKeys.bestScoreKey)
         }
         set {
             if newValue > bestScore {
-                NSUserDefaults.standardUserDefaults().setInteger(newValue, forKey: Constants.DefaultsKeys.bestScoreKey)
-                NSUserDefaults.standardUserDefaults().synchronize()
+                UserDefaults.standard.set(newValue, forKey: Constants.DefaultsKeys.bestScoreKey)
+                UserDefaults.standard.synchronize()
             }
         }
     }
@@ -86,11 +99,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var soundsDisabled: Bool {
         get {
-            return NSUserDefaults.standardUserDefaults().boolForKey(Constants.DefaultsKeys.soundsDisabledKey)
+            return UserDefaults.standard.bool(forKey: Constants.DefaultsKeys.soundsDisabledKey)
         }
         set {
-            NSUserDefaults.standardUserDefaults().setBool(newValue, forKey: Constants.DefaultsKeys.soundsDisabledKey)
-            NSUserDefaults.standardUserDefaults().synchronize()
+            UserDefaults.standard.set(newValue, forKey: Constants.DefaultsKeys.soundsDisabledKey)
+            UserDefaults.standard.synchronize()
         }
     }
     
@@ -128,23 +141,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.addChild(menuButton)
         
         // setup physics, gravity
-        self.physicsWorld.gravity = CGVectorMake(0, 0)
+        self.physicsWorld.gravity = CGVector(dx: 0, dy: 0)
         self.physicsWorld.contactDelegate = self
-        gravityField.position = CGPointMake(self.size.width / 2, self.size.height / 2)
+        gravityField.position = CGPoint(x: self.size.width / 2, y: self.size.height / 2)
         gravityField.categoryBitMask = cEnemy
         gravityField.strength = GameplayConfig.gravityFieldstrength //measures the acceleration of the field in meters per second squared
         addChild(gravityField)
         
         // setup game timer
-        let performSelector = SKAction.performSelector(#selector(GameScene.gameTimerTick), onTarget: self)
-        let repeatAction = SKAction.repeatActionForever(SKAction.sequence([SKAction.waitForDuration(1), performSelector]))
-        self.runAction(repeatAction)
+        let performSelector = SKAction.perform(#selector(GameScene.gameTimerTick), onTarget: self)
+        let repeatAction = SKAction.repeatForever(SKAction.sequence([SKAction.wait(forDuration: 1), performSelector]))
+        self.run(repeatAction)
         
         // NSNotifications
         self.setupNotifications()
     }
     
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         debugPrint("GameScene - didMoveToView")
     }
     
@@ -159,7 +172,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.addEnemy(newEnemiesAmount)
         
         // remove out-of-the-bounds bullets
-        self.enumerateChildNodesWithName(String(Bullet)) { (node, stop) in
+        self.enumerateChildNodes(withName: String(describing: Bullet())) { (node, stop) in
             if node.position.x >= Playground.size.width || node.position.x <= 0 || node.position.y >= Playground.size.height || node.position.y <= 0 {
                 node.removeFromParent()
             }
@@ -173,44 +186,44 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             enemiesOnline.limit += 2
             scoreLabel.fontColor = UIColor.appRedColor()
         } else {
-            scoreLabel.fontColor = UIColor.whiteColor()
+            scoreLabel.fontColor = UIColor.white
         }
     }
     
     // TODO: state restoration
     
     deinit {
-        NSNotificationCenter.defaultCenter().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
     // Notifications
     
     func setupNotifications() {
         // Nodes notifications
-        NSNotificationCenter.defaultCenter().addObserver(self,
+        NotificationCenter.default.addObserver(self,
                                                          selector: #selector(GameScene.bulletNodeRemovedNotification(_:)),
-                                                         name:Constants.Notifications.bulletNodeRemovedNotificationKey,
+                                                         name:NSNotification.Name(rawValue: Constants.Notifications.bulletNodeRemovedNotificationKey),
                                                          object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self,
+        NotificationCenter.default.addObserver(self,
                                                          selector: #selector(GameScene.enemyNodeRemovedNotification(_:)),
-                                                         name:Constants.Notifications.enemyNodeRemovedNotificationKey,
+                                                         name:NSNotification.Name(rawValue: Constants.Notifications.enemyNodeRemovedNotificationKey),
                                                          object: nil)
         // UIApplication notifications
-        NSNotificationCenter.defaultCenter().addObserver(self,
+        NotificationCenter.default.addObserver(self,
                                                          selector: #selector(GameScene.didEnterBackgroundNotification(_:)),
-                                                         name:UIApplicationDidEnterBackgroundNotification,
+                                                         name:NSNotification.Name.UIApplicationDidEnterBackground,
                                                          object: nil)
     }
     
-    func bulletNodeRemovedNotification(notification: NSNotification){
+    func bulletNodeRemovedNotification(_ notification: Notification){
         self.bulletsMonitor.online -= 1
     }
     
-    func enemyNodeRemovedNotification(notification: NSNotification){
+    func enemyNodeRemovedNotification(_ notification: Notification){
         enemiesOnline.onlineNow -= 1
     }
     
-    func didEnterBackgroundNotification(notification: NSNotification){
+    func didEnterBackgroundNotification(_ notification: Notification){
         // pause game and present main menu
         self.menuButtonClicked()
     }
@@ -218,21 +231,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     // MARK: - Actions
     
     func menuButtonClicked() {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
 //        self.view?.presentScene(appDelegate.menuScene, transition: SKTransition.crossFadeWithDuration(0.5))
         self.view?.presentScene(appDelegate.menuScene)
     }
     
     func gameOverAction() {
-        FIRAnalytics.logEventWithName("GameOver", parameters: [
-            "score": "\(self.score.points)",
-            "gamingTime": "\(self.gamingTime)",
-            "bestScoreOnThisDevice": "\(self.bestScore)"
+        FIRAnalytics.logEvent(withName: "GameOver", parameters: [
+            "score": "\(self.score.points)" as NSObject,
+            "gamingTime": "\(self.gamingTime)" as NSObject,
+            "bestScoreOnThisDevice": "\(self.bestScore)" as NSObject
             ])
         
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.gameOverScene.score = self.score.points
-        self.view?.presentScene(appDelegate.gameOverScene, transition: SKTransition.crossFadeWithDuration(0.5))
+        self.view?.presentScene(appDelegate.gameOverScene, transition: SKTransition.crossFade(withDuration: 0.5))
     }
     
     // MARK: - Add node, nodes generators
@@ -242,18 +255,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.position = Playground.center
         player.setScale(1.0)
         player.damageForce = GameplayConfig.playerDamageForce
-        player.name = String(Player)
+        player.name = String(describing: Player())
         self.addChild(player)
     }
     
-    func shotBullet(directionLocation: CGPoint) {
+    func shotBullet(_ directionLocation: CGPoint) {
         let bullet = Bullet()
         bullet.setScale(1.0)
         // physics body
         bullet.configurePhysics(cBullet, enemyBitmask: cEnemy | cBullet, mass: 1)
-        bullet.name = String(Bullet)
+        bullet.name = String(describing: Bullet())
         bullet.zRotation = player.turretBody.zRotation
-        bullet.position = (self.scene?.convertPoint(self.player.turretGunTube.position, fromNode: self.player.turretGunTube))!
+        bullet.position = (self.scene?.convert(self.player.turretGunTube.position, from: self.player.turretGunTube))!
         bullet.zPosition = -1 // behind
         bullet.damageForce = GameplayConfig.bulletDamageForce
         bullet.removeAfter(GameplayConfig.bulletTimeToLive) // time to live
@@ -269,7 +282,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet.applyForceToAngle(angleInRadians, scale: GameplayConfig.bulletSpeedRatio)
     }
     
-    func addEnemy(amount: Int = 1) {
+    func addEnemy(_ amount: Int = 1) {
         var count = amount
         
         while count > 0 {
@@ -280,13 +293,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             enemy.setScale(1)
             // physics body
             enemy.configurePhysics(cEnemy, enemyBitmask: cPlayer | cBullet | cEnemy, mass: 0)
-            enemy.name = String(Enemy)
+            enemy.name = "Enemy"
             enemy.position = generateEnemyRandomPosition()
             enemy.alpha = 0.0
-            enemy.runAction(SKAction.fadeInWithDuration(0.3))
+            enemy.run(SKAction.fadeIn(withDuration: 0.3))
             self.addChild(enemy)
             enemiesOnline.onlineNow += 1
-            enemy.runAction(SKAction.repeatActionForever(SKAction.rotateByAngle(1, duration: 1)))
+            enemy.run(SKAction.repeatForever(SKAction.rotate(byAngle: 1, duration: 1)))
         }
     }
     
@@ -305,9 +318,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // MARK: - SKScene delegate
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let location = touch.locationInNode(self)
+            let location = touch.location(in: self)
             
 //            // 6s 6sp only
 //            if #available(iOS 9.0, *) {
@@ -322,11 +335,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 //                // Fallback on earlier versions
 //            }
             
-            if menuButton.containsPoint(location) || self.paused {
+            if menuButton.contains(location) || self.isPaused {
                 menuButtonClicked()
             } else {
-                let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
-                player.turretBody.runAction(rotateAction, completion: { [weak self] in
+                let rotateAction = SKAction.rotate(toAngle: getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
+                player.turretBody.run(rotateAction, completion: { [weak self] in
                     if self?.bulletsMonitor.online < GameplayConfig.bulletsMaxOnline {
                         self?.shotBullet(location)
                     } else {
@@ -337,12 +350,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        if !self.paused {
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !self.isPaused {
             for touch in touches {
-                let location = touch.locationInNode(self)
-                let rotateAction = SKAction.rotateToAngle(getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
-                player.turretBody.runAction(rotateAction)
+                let location = touch.location(in: self)
+                let rotateAction = SKAction.rotate(toAngle: getAngleAxisRadians(location), duration: 0.05, shortestUnitArc: true)
+                player.turretBody.run(rotateAction)
                 //self.shotBullet(location) //burst mode
             }
         }
@@ -350,7 +363,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     // MARK: - SKPhysicsContactDelegate
     
-    func didBeginContact(contact: SKPhysicsContact) {
+    func didBegin(_ contact: SKPhysicsContact) {
         // Player and enemy contact
         if (contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask) == (cPlayer | cEnemy) {
             var enemy = SKPhysicsBody()
@@ -363,7 +376,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             if let enemyNode = enemy.node as? Enemy {
                 self.calculateCollisionDamageForNodes(enemyNode, nodeB: self.player)
                 
-                self.runAction(SKAction.colorGlitch(self, originalColor: UIColor.appBackgroundColor(), duration: 0.5))
+                self.run(SKAction.colorGlitch(self, originalColor: UIColor.appBackgroundColor(), duration: 0.5))
                 
                 // kill enemy anyway
                 self.explodeNode(enemyNode, completionHandler: { (node) in
@@ -372,14 +385,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 
                 if self.player.healthPower == 0 {
                     // game over
-                    self.paused = true
+                    self.isPaused = true
                     self.gameOverAction()
                 } else {
                     // hit
                     self.playSound(Sounds.pitch)
                     // pulsate
-                    self.player.runAction(SKAction.scaleTo(0.95, duration: 0.05), completion: { [weak self] in
-                        self?.player.runAction(SKAction.scaleTo(1, duration: 0.05))
+                    self.player.run(SKAction.scale(to: 0.95, duration: 0.05), completion: { [weak self] in
+                        self?.player.run(SKAction.scale(to: 1, duration: 0.05))
                     })
                 }
             }
@@ -420,26 +433,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func didEndContact(contact: SKPhysicsContact) {
+    func didEnd(_ contact: SKPhysicsContact) {
         // nothing here
     }
     
     override func didSimulatePhysics() {
         
-        self.enumerateChildNodesWithName(String(Enemy)) { (node, finished) in
+        self.enumerateChildNodes(withName: "Enemy") { (node, finished) in
             
             let maxSpeed: CGFloat = GameplayConfig.enemySpeedLimit
             
             if (node.physicsBody!.velocity.dx > maxSpeed) {
-                node.physicsBody!.velocity = CGVectorMake(maxSpeed, node.physicsBody!.velocity.dy);
+                node.physicsBody!.velocity = CGVector(dx: maxSpeed, dy: node.physicsBody!.velocity.dy);
             } else if (node.physicsBody!.velocity.dx < -maxSpeed) {
-                node.physicsBody!.velocity = CGVectorMake(-maxSpeed, node.physicsBody!.velocity.dy);
+                node.physicsBody!.velocity = CGVector(dx: -maxSpeed, dy: node.physicsBody!.velocity.dy);
             }
             
             if (node.physicsBody!.velocity.dy > maxSpeed) {
-                node.physicsBody!.velocity = CGVectorMake(node.physicsBody!.velocity.dx, maxSpeed);
+                node.physicsBody!.velocity = CGVector(dx: node.physicsBody!.velocity.dx, dy: maxSpeed);
             } else if (node.physicsBody!.velocity.dy < -maxSpeed) {
-                node.physicsBody!.velocity = CGVectorMake(node.physicsBody!.velocity.dx, -maxSpeed);
+                node.physicsBody!.velocity = CGVector(dx: node.physicsBody!.velocity.dx, dy: -maxSpeed);
             }
         }
     }
@@ -456,7 +469,7 @@ extension GameScene {
      - parameter nodeA: BaseNode with damage force and power properties
      - parameter nodeB: BaseNode with damage force and power properties
      */
-    func calculateCollisionDamageForNodes(nodeA: BaseNode, nodeB: BaseNode) {
+    func calculateCollisionDamageForNodes(_ nodeA: BaseNode, nodeB: BaseNode) {
         if nodeA.damageForce == 0 {
             nodeA.healthPower = 0
         } else if nodeB.damageForce == 0 {
@@ -474,7 +487,7 @@ extension GameScene {
      - parameter node:              node to explode, BaseNode class
      - parameter completionHandler: completion block, you cane remove exploded node here
      */
-    func explodeNode(node: BaseNode, completionHandler:(node: BaseNode) -> ()) {
+    func explodeNode(_ node: BaseNode, completionHandler:@escaping (_ node: BaseNode) -> ()) {
         let explosion = SKEmitterNode()
         explosion.particleTexture = node.texture!
         explosion.position = node.position
@@ -484,7 +497,7 @@ extension GameScene {
         node.clearBitMasks() // no interactions since explosion started
         node.texture = nil
         
-        explosion.particleColor = UIColor.brownColor()
+        explosion.particleColor = UIColor.brown
         explosion.numParticlesToEmit = Int(node.size.height)
         explosion.particleBirthRate = 150
         explosion.particleLifetime = 2
@@ -505,13 +518,13 @@ extension GameScene {
         explosion.particleColorBlendFactor = 1
         explosion.particleColorBlendFactorRange = 0
         explosion.particleColorBlendFactorSpeed = 0
-        explosion.particleBlendMode = SKBlendMode.Add
+        explosion.particleBlendMode = SKBlendMode.add
         
         self.addChild(explosion)
         
-        explosion.runAction(SKAction.sequence([SKAction.waitForDuration(1), SKAction.removeFromParent()])) { 
-            completionHandler(node: node)
-        }
+        explosion.run(SKAction.sequence([SKAction.wait(forDuration: 1), SKAction.removeFromParent()]), completion: { 
+            completionHandler(node)
+        }) 
     }
 }
 
@@ -525,9 +538,9 @@ extension GameScene {
         }
     }
     
-    func playSound(soundAction: SKAction) {
+    func playSound(_ soundAction: SKAction) {
         if !soundsDisabled {
-            self.runAction(soundAction)
+            self.run(soundAction)
         }
     }
 }
@@ -543,7 +556,7 @@ extension GameScene {
      
      - returns: angle in radians that makes direction to the provided point
      */
-    func getAngleAxisRadians(point: CGPoint) -> CGFloat {
+    func getAngleAxisRadians(_ point: CGPoint) -> CGFloat {
         let relativeTouch = CGPoint(x: point.x - player.position.x,
                                     y: point.y - player.position.y)
         let radians = atan2(-relativeTouch.x, relativeTouch.y)
@@ -561,7 +574,7 @@ extension GameScene {
      
      - returns: mins and seconds
      */
-    func secondsMinutesAndSeconds(seconds: Double) -> (minutes: Int, seconds: Int) {
+    func secondsMinutesAndSeconds(_ seconds: Double) -> (minutes: Int, seconds: Int) {
         let (_,  minf) = modf(seconds / 3600)
         let (min, secf) = modf(60 * minf)
         return (Int(min), Int(60 * secf))

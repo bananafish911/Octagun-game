@@ -20,27 +20,27 @@ class Bullet: BaseNode {
     
     init() {
         let texture = SKTexture(imageNamed: "Bullet")
-        texture.filteringMode = .Nearest
+        texture.filteringMode = .nearest
         super.init(texture: texture, color: UIColor.appBlueColor(), size: texture.size())
     }
     
     override func removeFromParent() {
-        dispatch_async(dispatch_get_main_queue()) {
-            NSNotificationCenter.defaultCenter().postNotificationName(Constants.Notifications.bulletNodeRemovedNotificationKey,
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Constants.Notifications.bulletNodeRemovedNotificationKey),
                                                                       object: nil,
                                                                       userInfo: nil)
         }
         super.removeFromParent()
     }
     
-    func removeAfter(timeToLiveSeconds: NSTimeInterval) {
-        self.runAction(SKAction.sequence([
-            SKAction.waitForDuration(timeToLiveSeconds),
+    func removeAfter(_ timeToLiveSeconds: TimeInterval) {
+        self.run(SKAction.sequence([
+            SKAction.wait(forDuration: timeToLiveSeconds),
             SKAction.removeFromParent()
             ]))
     }
     
-    func applyForceToAngle(radians: Float, scale: CGFloat) {
+    func applyForceToAngle(_ radians: Float, scale: CGFloat) {
         let dx = CGFloat(cosf(radians + Float(M_PI_2)))
         let dy = CGFloat(sinf(radians + Float(M_PI_2)))
         let vector = CGVector(dx: dx * scale, dy: dy * scale)

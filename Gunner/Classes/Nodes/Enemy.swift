@@ -29,13 +29,13 @@ class Enemy: BaseNode {
     
     init(type: EnemyType, size: CGFloat = 32) {
         let texture = SKTexture(imageNamed: type.rawValue)
-        texture.filteringMode = .Nearest
-        super.init(texture: texture, color: UIColor.clearColor(), size: CGSize(width: size, height: size))
+        texture.filteringMode = .nearest
+        super.init(texture: texture, color: UIColor.clear, size: CGSize(width: size, height: size))
     }
     
     override func removeFromParent() {
-        dispatch_async(dispatch_get_main_queue()) {
-            NSNotificationCenter.defaultCenter().postNotificationName(Constants.Notifications.enemyNodeRemovedNotificationKey,
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: Notification.Name(rawValue: Constants.Notifications.enemyNodeRemovedNotificationKey),
                                                                       object: nil,
                                                                       userInfo: nil)
         }

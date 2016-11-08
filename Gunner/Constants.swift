@@ -55,7 +55,7 @@ struct GameplayConfig {
     static let bulletDamageForce: Int = 48 // Example: one bullet with 32 DF kills enemy with size 32
     static let bulletSpeedRatio: CGFloat = 10000 // starting speed ratio
     static let bulletsMaxOnline: Int = 6 // shots limit
-    static let bulletTimeToLive: NSTimeInterval = 4 // in seconts
+    static let bulletTimeToLive: TimeInterval = 4 // in seconts
     // Enemy
     static let enemyMinSize: CGFloat = 32 // minimum size of the enemy, also affects to the damageForce (size == damageF)
     static let enemyMaxSize: CGFloat = 64 // maximum size of the enemy, also affects to the damageForce (size == damageF)
@@ -67,14 +67,14 @@ struct GameplayConfig {
  *  Playground == screen size
  */
 struct Playground {
-    static let size = UIScreen.mainScreen().bounds.size
-    static let center = CGPointMake(UIScreen.mainScreen().bounds.size.width / 2, UIScreen.mainScreen().bounds.size.height / 2)
+    static let size = UIScreen.main.bounds.size
+    static let center = CGPoint(x: UIScreen.main.bounds.size.width / 2, y: UIScreen.main.bounds.size.height / 2)
     
     struct Borders {
-        static let top: CGFloat = UIScreen.mainScreen().bounds.size.height
+        static let top: CGFloat = UIScreen.main.bounds.size.height
         static let bottom: CGFloat = 0.0
         static let left: CGFloat = 0.0
-        static let right: CGFloat = UIScreen.mainScreen().bounds.size.width
+        static let right: CGFloat = UIScreen.main.bounds.size.width
     }
 }
 
@@ -120,7 +120,7 @@ extension UIColor {
 
 extension UIFont {
     
-    class func appFontOfSize(size: CGFloat) -> UIFont {
+    class func appFontOfSize(_ size: CGFloat) -> UIFont {
         return UIFont(name: Constants.appFontName, size: size)!
     }
     

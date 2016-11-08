@@ -15,45 +15,45 @@ class MenuScene: SKScene {
     
     // UI Elements
     lazy var playButton: SKSpriteNode = {
-        return self.childNodeWithName("playButton") as! SKSpriteNode
+        return self.childNode(withName: "playButton") as! SKSpriteNode
     }()
     lazy var rateButton: SKSpriteNode = {
-        return self.childNodeWithName("rateButton") as! SKSpriteNode
+        return self.childNode(withName: "rateButton") as! SKSpriteNode
     }()
     lazy var soundButton: SKSpriteNode = {
-        return self.childNodeWithName("soundButton") as! SKSpriteNode
+        return self.childNode(withName: "soundButton") as! SKSpriteNode
     }()
     lazy var chatButton: SKSpriteNode = {
-        return self.childNodeWithName("chatButton") as! SKSpriteNode
+        return self.childNode(withName: "chatButton") as! SKSpriteNode
     }()
     
     lazy var scoreLabel: SKLabelNode = {
-        return self.childNodeWithName("scoreLabel") as! SKLabelNode
+        return self.childNode(withName: "scoreLabel") as! SKLabelNode
     }()
     
     let menuClickSoundAction = SKAction.playSoundFileNamed("menu-click.wav", waitForCompletion: false)
     
     var soundsDisabled: Bool {
         get {
-            return NSUserDefaults.standardUserDefaults().boolForKey(Constants.DefaultsKeys.soundsDisabledKey)
+            return UserDefaults.standard.bool(forKey: Constants.DefaultsKeys.soundsDisabledKey)
         }
         set {
-            NSUserDefaults.standardUserDefaults().setBool(newValue, forKey: Constants.DefaultsKeys.soundsDisabledKey)
-            NSUserDefaults.standardUserDefaults().synchronize()
+            UserDefaults.standard.set(newValue, forKey: Constants.DefaultsKeys.soundsDisabledKey)
+            UserDefaults.standard.synchronize()
         }
     }
 
     var bestScore: Int {
-        return NSUserDefaults.standardUserDefaults().integerForKey(Constants.DefaultsKeys.bestScoreKey)
+        return UserDefaults.standard.integer(forKey: Constants.DefaultsKeys.bestScoreKey)
     }
     
-    let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    let appDelegate = UIApplication.shared.delegate as! AppDelegate
     
     // MARK: - Methods
     
     // MARK: - Lifecycle
     
-    override func didMoveToView(view: SKView) {
+    override func didMove(to view: SKView) {
         self.size = Playground.size
         self.backgroundColor = UIColor.appBackgroundColor()
         
@@ -61,11 +61,11 @@ class MenuScene: SKScene {
         updateSoundButton()
         updatePlayButton()
         
-        let pulseUp = SKAction.scaleTo(1.05, duration: 0.5)
-        let pulseDown = SKAction.scaleTo(0.95, duration: 0.5)
+        let pulseUp = SKAction.scale(to: 1.05, duration: 0.5)
+        let pulseDown = SKAction.scale(to: 0.95, duration: 0.5)
         let pulse = SKAction.sequence([pulseUp, pulseDown])
-        let repeatPulse = SKAction.repeatActionForever(pulse)
-        self.playButton.runAction(repeatPulse)
+        let repeatPulse = SKAction.repeatForever(pulse)
+        self.playButton.run(repeatPulse)
     }
     
     func updateSoundButton() {
@@ -86,35 +86,35 @@ class MenuScene: SKScene {
     
     // MARK: - SKScene delegate
     
-    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         for touch in touches {
-            let location = touch.locationInNode(self)
-            if self.nodeAtPoint(location).name?.containsString("Button") != nil {
-                let optionalSound = soundsDisabled ? SKAction.waitForDuration(0) : menuClickSoundAction
-                self.runAction(optionalSound, completion: { [unowned self] in
+            let location = touch.location(in: self)
+            if self.atPoint(location).name?.contains("Button") != nil {
+                let optionalSound = soundsDisabled ? SKAction.wait(forDuration: 0) : menuClickSoundAction
+                self.run(optionalSound, completion: { [unowned self] in
                     // buttons
                     
-                    if self.playButton.containsPoint(location) {
+                    if self.playButton.contains(location) {
                         if self.appDelegate.gameScene == nil {
                             self.appDelegate.gameScene = GameScene()
                         }
-                        self.view?.presentScene(self.appDelegate.gameScene!, transition: SKTransition.crossFadeWithDuration(0.5))
+                        self.view?.presentScene(self.appDelegate.gameScene!, transition: SKTransition.crossFade(withDuration: 0.5))
                         
-                    } else if self.rateButton.containsPoint(location) {
+                    } else if self.rateButton.contains(location) {
                         // TODO: appstore uiwebview
-                        let iTunesUrl = NSURL(string: Constants.iTunesUrlString)
-                        if iTunesUrl != nil && UIApplication.sharedApplication().canOpenURL(iTunesUrl!) {
-                            UIApplication.sharedApplication().openURL(iTunesUrl!)
+                        let iTunesUrl = URL(string: Constants.iTunesUrlString)
+                        if iTunesUrl != nil && UIApplication.shared.canOpenURL(iTunesUrl!) {
+                            UIApplication.shared.openURL(iTunesUrl!)
                         }
-                        FIRAnalytics.logEventWithName("userAction", parameters: ["button": "rate"])
+                        FIRAnalytics.logEvent(withName: "userAction", parameters: ["button": "rate" as NSObject])
                         
-                    } else if self.soundButton.containsPoint(location) {
+                    } else if self.soundButton.contains(location) {
                         self.soundsDisabled = !self.soundsDisabled
                         self.updateSoundButton()
                         
-                    } else if self.chatButton.containsPoint(location) {
+                    } else if self.chatButton.contains(location) {
                         Smooch.show()
-                        FIRAnalytics.logEventWithName("userAction", parameters: ["button": "chat"])
+                        FIRAnalytics.logEvent(withName: "userAction", parameters: ["button": "chat" as NSObject])
                     }
                 })
             }

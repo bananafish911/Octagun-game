@@ -8,10 +8,12 @@
 #import <Foundation/Foundation.h>
 #import "SKTMessage.h"
 #import "SKTMessageAction.h"
+
+NS_ASSUME_NONNULL_BEGIN
 @protocol SKTConversationDelegate;
 
 typedef void (^SKTImageUploadProgressBlock)(double progress);
-typedef void (^SKTImageUploadCompletionBlock)(NSError *error, SKTMessage *message);
+typedef void (^SKTImageUploadCompletionBlock)(NSError* _Nullable error, SKTMessage* _Nullable message);
 
 /**
  *  @discussion Represents various actions the user takes when interacting with Smooch UI components.
@@ -28,20 +30,56 @@ typedef NS_ENUM(NSInteger, SKTAction) {
 };
 
 /**
- *  @abstract Notification that is fired when the count of unread messages changes. The notification object will be an instance of SKTConversation, of which you can then inspect the messageCount property.
+ *  @abstract Posted when the count of unread messages changes. The notification object will be an instance of SKTConversation, of which you can then inspect the messageCount property.
  *
  *  @see SKTConversation
  */
 extern NSString* const SKTConversationUnreadCountDidChangeNotification;
 
 /**
- *  @abstract Notification that is fired when new messages are received from the server.
+ *  @abstract Posted when an image upload begins.
  *
- *  @discussion To inspect the messages, the userInfo dictionary contains an array of SKTMessage objects with key SKTConversationNewMessagesKey.
+ *  @discussion The userInfo dictionary contains the UIImage to upload. Use SKTConversationImageKey to access this value.
  *
- *  Example:
+ *  This notification is guaranteed to fire on the main thread.
  *
- *  `NSArray* newMessages = notification.userInfo[SKTConversationNewMessagesKey];`
+ *  @see SKTConversationImageKey
+ */
+extern NSString* const SKTConversationImageUploadDidStartNotification;
+
+/**
+ *  @abstract Posted when an image upload receives a progress update.
+ *
+ *  @discussion The userInfo dictionary contains the UIImage being uploaded, as well as an NSNumber reflecting the current progress. Use SKTConversationImageKey and SKTConversationProgressKey to access these values.
+ *
+ *  This notification is guaranteed to fire on the main thread.
+ *
+ *  @see SKTConversationImageKey
+ *  @see SKTConversationProgressKey
+ */
+extern NSString* const SKTConversationImageUploadProgressDidChangeNotification;
+
+/**
+ *  @abstract Posted when an image upload completes, either in success or failure.
+ *
+ *  @discussion The userInfo dictionary contains the UIImage that was uploaded. Use SKTConversationImageKey to access this value.
+ *
+ *  If the upload succeeded, the userInfo dictionary will also include the SKTMessage instance of the new message. Use SKTConversationMessageKey to access this value.
+ *  If the upload failed, the userInfo dictionary will include the NSError that occurred. Use SKTConversationErrorKey to access this value.
+ *
+ *  This notification is guaranteed to fire on the main thread.
+ *
+ *  @see SKTMessage
+ *  @see SKTConversationImageKey
+ *  @see SKTConversationMessageKey
+ *  @see SKTConversationErrorKey
+ */
+extern NSString* const SKTConversationImageUploadCompletedNotification;
+
+/**
+ *  @abstract Posted when new messages are received from the server.
+ *
+ *  @discussion The userInfo dictionary contains an NSArray of SKTMessage objects. Use SKTConversationNewMessagesKey to access this value.
  *
  *  @see SKTMessage
  *  @see SKTConversationNewMessagesKey
@@ -49,11 +87,73 @@ extern NSString* const SKTConversationUnreadCountDidChangeNotification;
 extern NSString* const SKTConversationDidReceiveMessagesNotification;
 
 /**
- *  @abstract The key to use to retrieve new messages in SKTConversationDidReceiveMessagesNotification userInfo dictionary
+ *  @abstract Posted when an operation to load previous messages in a conversation has been completed
+ *
+ *  @discussion This notification is posted as the result of [SKTConversation loadPreviousMessages]
+ *
+ *  If the operation succeeded, the object returned by this notification will include the updated array of messages
+ *  If the operation failed, the userInfo dictionary will contain an "error" object with the response error
+ *
+ *  @see SKTMessage
+ *  @see SKTConversationPreviousMessagesKey
+ */
+extern NSString* const SKTConversationDidReceivePreviousMessagesNotification;
+
+/**
+ *  @abstract A key whose value is an NSArray of SKTMessage objects.
+ *
+ *  @discussion This key is used with SKTConversationDidReceiveMessagesNotification notification.
  *
  *  @see SKTConversationDidReceiveMessagesNotification
  */
 extern NSString* const SKTConversationNewMessagesKey;
+
+/**
+ *  @abstract A key whose value is an NSArray of SKTMessage objects
+ *
+ *  @discussion This key is used with SKTConversationDidReceivePreviousMessagesNotification notification
+ *
+ *  @see SKTConversationDidReceivePreviousMessagesNotification
+ */
+extern NSString* const SKTConversationPreviousMessagesKey;
+
+/**
+ *  @abstract A key whose value is a UIImage which represents an image being uploaded. 
+ *
+ *  @discussion This key is used with SKTConversationImageUploadDidStartNotification, SKTConversationImageUploadProgressDidChangeNotification, and SKTConversationImageUploadCompletedNotification notifications.
+ *
+ *  @see SKTConversationImageUploadDidStartNotification
+ *  @see SKTConversationImageUploadProgressDidChangeNotification
+ *  @see SKTConversationImageUploadCompletedNotification
+ */
+extern NSString* const SKTConversationImageKey;
+
+/**
+ *  @abstract A key whose value is an NSError.
+ *
+ *  @discussion This key is used with SKTConversationImageUploadCompletedNotification notification.
+ *
+ *  @see SKTConversationImageUploadCompletedNotification
+ */
+extern NSString* const SKTConversationErrorKey;
+
+/**
+ *  @abstract A key whose value is an SKTMessage object representing the newly created message.
+ *
+ *  @discussion This key is used with SKTConversationImageUploadCompletedNotification notification.
+ *
+ *  @see SKTConversationImageUploadCompletedNotification
+ */
+extern NSString* const SKTConversationMessageKey;
+
+/**
+ *  @abstract A key whose value is an NSNumber reflecting the current progress of an image upload.
+ *
+ *  @discussion This key is used with SKTConversationImageUploadProgressDidChangeNotification notification.
+ *
+ *  @see SKTConversationImageUploadProgressDidChangeNotification
+ */
+extern NSString* const SKTConversationProgressKey;
 
 /**
  *  @discussion The SKTConversation class provides an interface to interact with the current user's conversation. 
@@ -84,7 +184,7 @@ extern NSString* const SKTConversationNewMessagesKey;
  *
  *  @see SKTMessage
  */
-@property(readonly) NSArray* messages;
+@property(readonly, nullable) NSArray* messages;
 
 /**
  *  @abstract The total number of messages in the conversation, including user-generated messages.
@@ -103,7 +203,7 @@ extern NSString* const SKTConversationNewMessagesKey;
  *
  *  @see SKTConversationDelegate
  */
-@property(weak) id<SKTConversationDelegate> delegate;
+@property(weak, nullable) id<SKTConversationDelegate> delegate;
 
 /**
  *  @abstract Marks all unread messages as read.
@@ -113,6 +213,13 @@ extern NSString* const SKTConversationNewMessagesKey;
  *  @see SKTMessage
  */
 -(void)markAllAsRead;
+
+/**
+ *  @abstract Loads previous messages for this conversation, if any
+ *
+ *  @dicussion Will get previous messages for this conversation based on the timestamp of the current oldest message and will notify the delegate of new incoming messages through [SKTConversationDelegate conversation:didReceivePreviousMessages:]
+ */
+-(void)loadPreviousMessages;
 
 /**
  *  @abstract Adds a new message to the conversation.
@@ -139,7 +246,7 @@ extern NSString* const SKTConversationNewMessagesKey;
  *  @param progressBlock Called to report progress updates. May be nil.
  *  @param completionBlock Called when the upload completes or fails. May be nil.
  */
--(void)sendImage:(UIImage *)image withProgress:(SKTImageUploadProgressBlock)progressBlock completion:(SKTImageUploadCompletionBlock)completionBlock;
+-(void)sendImage:(UIImage *)image withProgress:(nullable SKTImageUploadProgressBlock)progressBlock completion:(nullable SKTImageUploadCompletionBlock)completionBlock;
 
 /**
  *  @abstract Sends a postback to the server.
@@ -153,7 +260,7 @@ extern NSString* const SKTConversationNewMessagesKey;
  *  @param messageAction The messageAction for which to send the postback. Must not be nil.
  *  @param completionBlock Called when the postback completes or fails. May be nil.
  */
--(void)postback:(SKTMessageAction*)messageAction completion:(void (^)(NSError* error))completionBlock;
+-(void)postback:(SKTMessageAction*)messageAction completion:(nullable void (^)(NSError* _Nullable error))completionBlock;
 
 /**
  *  @abstract Retries a message that failed to send.
@@ -228,6 +335,16 @@ extern NSString* const SKTConversationNewMessagesKey;
 -(void)conversation:(SKTConversation*)conversation didReceiveMessages:(NSArray*)messages;
 
 /**
+ *  @abstract Notifies the delegate when older messages in the conversation history have been received
+ *
+ *  @dicussion Called when older messages in the conversation history are received from the server
+ *
+ *  @param conversation The conversation object
+ *  @param messages The messages that have been fetched
+ */
+-(void)conversation:(SKTConversation*)conversation didReceivePreviousMessages:(NSArray*)messages;
+
+/**
  *  @abstract Asks the delegate if default handling should be performed for a message action.
  *
  *  @discussion Called when the user taps a message action.
@@ -265,3 +382,4 @@ extern NSString* const SKTConversationNewMessagesKey;
 -(void)conversation:(SKTConversation *)conversation didDismissViewController:(UIViewController*)viewController;
 
 @end
+NS_ASSUME_NONNULL_END

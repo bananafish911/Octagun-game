@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+NS_ASSUME_NONNULL_BEGIN
 @interface SKTSettings : NSObject
 
 /**
@@ -52,7 +53,7 @@
  *
  *  @see Smooch
  */
-@property(nonatomic, copy) NSString* userId;
+@property(nonatomic, copy, nullable) NSString* userId;
 
 /**
  *  @abstract Optional jwt used to prove the origin of the login request.
@@ -63,7 +64,7 @@
  *
  *  @see Smooch
  */
-@property(nonatomic, copy) NSString* jwt;
+@property(nonatomic, copy, nullable) NSString* jwt;
 
 /**
  *  @abstract Maximum number of seconds to display in-app notifications before dismissing.
@@ -77,17 +78,19 @@
 /**
  *  @abstract Whether or not to swizzle app delegate methods for handling push notifications.
  *
- *  @discussion When set to YES, Smooch will swizzle the following methods of your UIApplicationDelegate in order to automatically handle push notification receiving and registering.
+ *  @discussion When set to YES, Smooch will swizzle the following methods of your UIApplicationDelegate in order to automatically handle push notification receiving and registering, as well as user notification handling.
  *
  *  1. -application:didRegisterForRemoteNotificationsWithDeviceToken:
  *  2. -application:didFailToRegisterForRemoteNotificationsWithError:
  *  3. -application:didReceiveRemoteNotification:
  *  4. -application:didReceiveRemoteNotification:fetchCompletionHandler:
+ *  5. -application:handleActionWithIdentifier:forRemoteNotification:withResponseInfo:completionHandler:
  *
  *  If set to NO, Smooch will not perform swizzling. It is up to the app to handle Smooch push notifications by doing the following:
  *
  *  1. When a new push token is received in -application:didRegisterForRemoteNotificationsWithDeviceToken:, you must call Smooch +setPushToken.
  *  2. In your -application:didReceiveRemoteNotification: or -application:didReceiveRemoteNotification:fetchCompletionHandler: callback, you must call Smooch +handlePushNotification: with the passed userInfo dictionary.
+ *  3. In your -application:handleActionWithIdentifier:forRemoteNotification:withResponseInfo:completionHandler: callback, you must call Smooch +handleUserNotificationActionWithIdentifier:withResponseInfo:completionHandler: with the correct parameters.
  *
  *  The default value is YES.
  *
@@ -96,12 +99,30 @@
 @property BOOL enableAppDelegateSwizzling;
 
 /**
+ *  @abstract Whether or not to automatically replace the application's UNUserNotificationCenterDelegate at init time.
+ *
+ *  @discussion For more information, see the +userNotificationCenterDelegate method of the Smooch class.
+ *
+ *  If set to NO, the application must forward calls from its own UNUserNotificationCenterDelegate to Smooch to ensure proper handling of notifications on iOS 10.
+ *
+ *  The default value is YES.
+ *
+ *  @see Smooch
+ */
+@property BOOL enableUserNotificationCenterDelegateOverride;
+
+/**
  *  @abstract Whether or not to request user notification privileges after the user sends their first message.
  *
  *  @discussion If your app has a preferred time to request user notification privileges, set this to NO.
  *
+ *  If set to NO, the application must make sure to register the Smooch user notification category settings. For more information, see the +userNotificationCategories method of the Smooch class.
+ *
  *  The default value is YES.
+ *
+ *  @see Smooch
  */
 @property BOOL requestPushPermissionOnFirstMessage;
 
 @end
+NS_ASSUME_NONNULL_END
