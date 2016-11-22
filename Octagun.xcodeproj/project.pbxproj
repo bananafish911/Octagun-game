@@ -54,6 +54,7 @@
 
 /* Begin PBXFileReference section */
 		3A6182819C9F0BB6CE45B037 /* Pods_Octagun.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Octagun.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		571F06221DD226BE00B1C306 /* Octagun.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Octagun.entitlements; sourceTree = "<group>"; };
 		57293DE31D318FA3002A44B8 /* Octagun.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Octagun.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		57293DEF1D318FA3002A44B8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		57293DF11D318FA3002A44B8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -135,6 +136,7 @@
 		57293DDA1D318FA3002A44B8 = {
 			isa = PBXGroup;
 			children = (
+				571F06221DD226BE00B1C306 /* Octagun.entitlements */,
 				57293DE51D318FA3002A44B8 /* Gunner */,
 				57293DE41D318FA3002A44B8 /* Products */,
 				02852DB3A3ABBBC0F9F7C26C /* Pods */,
@@ -535,6 +537,7 @@
 			baseConfigurationReference = 8F181BBCA08F75A6DA77BF31 /* Pods-Octagun.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Octagun.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -558,6 +561,7 @@
 			baseConfigurationReference = 6304E9A4370C3EF113DFBBD4 /* Pods-Octagun.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Octagun.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
